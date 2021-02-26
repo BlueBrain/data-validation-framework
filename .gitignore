@@ -1,0 +1,14 @@
+**/__pycache__
+*.egg-info
+*.pyc
+*.swp
+._.DS_Store
+.coverage
+.DS_Store
+.eggs
+.tox
+build
+coverage.xml
+dist
+doc/build
+reports
