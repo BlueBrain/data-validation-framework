@@ -35,6 +35,7 @@ setup(
     name="data-validation-framework",
     author="bbp-ou-cells",
     author_email="bbp-ou-cells@groupes.epfl.ch",
+    version=VERSION,
     description="Simple framework to create data validation workflows.",
     long_description=README,
     long_description_content_type="text/x-rst",
