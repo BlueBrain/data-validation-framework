@@ -4,7 +4,7 @@ Data Validation Framework
 This project provides simple tools to create data validation workflows.
 The workflows are based on the `luigi <https://luigi.readthedocs.io/en/stable>`_ library.
 
-The main objective of this frameworkf is to gather in a same place both the specifications that the
+The main objective of this framework is to gather in a same place both the specifications that the
 data must follow and the code that actually tests the data. This avoids having multiple documents
 to store the specifications and a repository to store the code.
 
@@ -34,6 +34,7 @@ Building a new workflow is simple, as you can see in the following example:
 
 
     class ValidationTask1(dvf.task.ElementValidationTask):
+        """Use the class dosctring to describe the specifications of the ValidationTask1."""
 
         output_columns = {"col_name": None}
 
@@ -65,8 +66,14 @@ Building a new workflow is simple, as you can see in the following example:
 
 
     class ValidationTask2(dvf.task.SetValidationTask):
+        """In some cases you might want to keep the docstring to describe what a developper
+        needs to know, not the end-user. In this case, you can use the ``__specifications__``
+        attribute to store the specifications."""
 
         a_parameter = luigi.Parameter()
+
+        __specifications__ = """Use the __specifications__ to describe the specifications of the
+        ValidationTask2."""
 
         def inputs(self):
             return {ValidationTask1(): {"col_name": "new_col_name_in_current_task"}}
@@ -78,6 +85,7 @@ Building a new workflow is simple, as you can see in the following example:
 
 
     class ValidationWorkflow(dvf.task.ValidationWorkflow):
+        """Use the global workflow specifications to give general context to the end-user."""
 
         def inputs(self):
             return {
@@ -100,6 +108,15 @@ The sub-classes of ``dvf.task.ElementValidationTask`` should return a
 ``dvf.result.ValidationResult`` object. The sub-classes of ``dvf.task.SetValidationTask`` should
 return a ``Pandas.DataFrame`` object with at least the following columns
 ``["is_valid", "ret_code", "comment", "exception"]`` and with the same index as the input dataset.
+
+Generate the specifications of a workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The specifications that the data should follow can be generated with the following luigi command:
+
+.. code-block:: Bash
+
+    luigi --module test_validation ValidationWorkflow --log-level INFO --local-scheduler --result-path out --ValidationTask2-a-parameter 15 --specifications-only
 
 Runing a workflow
 ~~~~~~~~~~~~~~~~~

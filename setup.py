@@ -23,7 +23,7 @@ doc_reqs = [
 ]
 test_reqs = [
     "pause",
-    "diff_pdf_visually>=1.5.1",
+    "diff_pdf_visually>=1.5.1,!=1.6.0",
     "pytest",
     "pytest-cov",
     "pytest-html",

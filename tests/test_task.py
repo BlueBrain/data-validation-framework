@@ -1014,9 +1014,8 @@ class TestValidationWorkflow:
             class TestTask(task.SetValidationTask):
                 """A test validation task."""
 
-                @staticmethod
-                def validation_function(*args, **kwargs):
-                    pass
+                def run(self):
+                    raise RuntimeError("THIS TASK SHOULD NOT BE RUN")
 
             return TestTask
 
@@ -1027,9 +1026,8 @@ class TestValidationWorkflow:
 
                 __specifications__ = "The specific doc only used in report."
 
-                @staticmethod
-                def validation_function(*args, **kwargs):
-                    pass
+                def run(self):
+                    raise RuntimeError("THIS TASK SHOULD NOT BE RUN")
 
             return TestTask_Specifications
 
@@ -1061,13 +1059,41 @@ class TestValidationWorkflow:
 
         def test_rst2pdf(self, tmpdir, dataset_df_path, data_dir, TestWorkflow):
             root = tmpdir / "rst2pdf"
-            root.mkdir()
-            report_task = TestWorkflow(dataset_df=dataset_df_path, result_path=str(root))
-            report.make_report(report_task)
+            assert luigi.build(
+                [
+                    TestWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        specifications_only=True,
+                    )
+                ],
+                local_scheduler=True,
+            )
 
-            assert (root / "report_TestWorkflow.pdf").exists()
+            assert (root / "TestWorkflow_specifications.pdf").exists()
             assert pdfdiff(
-                root / "report_TestWorkflow.pdf",
+                root / "TestWorkflow_specifications.pdf",
+                data_dir / "test_report_before_run" / "report_rst2pdf.pdf",
+                threshold=25,
+            )
+
+        def test_rst2pdf_report_path(self, tmpdir, dataset_df_path, data_dir, TestWorkflow):
+            root = tmpdir / "rst2pdf"
+            assert luigi.build(
+                [
+                    TestWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        report_path="test_custom_document_name.pdf",
+                        specifications_only=True,
+                    )
+                ],
+                local_scheduler=True,
+            )
+
+            assert (root / "test_custom_document_name.pdf").exists()
+            assert pdfdiff(
+                root / "test_custom_document_name.pdf",
                 data_dir / "test_report_before_run" / "report_rst2pdf.pdf",
                 threshold=25,
             )
@@ -1075,15 +1101,21 @@ class TestValidationWorkflow:
         @pytest.mark.skipif(SKIP_IF_NO_LATEXMK, reason=REASON_NO_LATEXMK)
         def test_latexpdf(self, tmpdir, dataset_df_path, data_dir, TestWorkflow):
             root = tmpdir / "latexpdf"
-            root.mkdir()
-            report_task = TestWorkflow(
-                dataset_df=dataset_df_path, result_path=str(root), report_type="latexpdf"
+            assert luigi.build(
+                [
+                    TestWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        report_type="latexpdf",
+                        specifications_only=True,
+                    )
+                ],
+                local_scheduler=True,
             )
-            report.make_report(report_task)
 
-            assert (root / "report_TestWorkflow.pdf").exists()
+            assert (root / "TestWorkflow_specifications.pdf").exists()
             assert pdfdiff(
-                root / "report_TestWorkflow.pdf",
+                root / "TestWorkflow_specifications.pdf",
                 data_dir / "test_report_before_run" / "report_latexpdf.pdf",
                 threshold=15,
             )
@@ -1101,13 +1133,21 @@ class TestValidationWorkflow:
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, report_config
         ):
             root = tmpdir / "rst2pdf"
-            root.mkdir()
-            report_task = TestWorkflow(dataset_df=dataset_df_path, result_path=str(root))
-            report.make_report(report_task, config=report_config)
+            assert luigi.build(
+                [
+                    TestWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        specifications_only=True,
+                        report_config=report_config,
+                    )
+                ],
+                local_scheduler=True,
+            )
 
-            assert (root / "report_TestWorkflow.pdf").exists()
+            assert (root / "TestWorkflow_specifications.pdf").exists()
             assert pdfdiff(
-                root / "report_TestWorkflow.pdf",
+                root / "TestWorkflow_specifications.pdf",
                 data_dir / "test_report_before_run" / "report_rst2pdf_with_config.pdf",
             )
 
@@ -1116,15 +1156,22 @@ class TestValidationWorkflow:
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, report_config
         ):
             root = tmpdir / "latexpdf"
-            root.mkdir()
-            report_task = TestWorkflow(
-                dataset_df=dataset_df_path, result_path=str(root), report_type="latexpdf"
+            assert luigi.build(
+                [
+                    TestWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        report_type="latexpdf",
+                        specifications_only=True,
+                        report_config=report_config,
+                    )
+                ],
+                local_scheduler=True,
             )
-            report.make_report(report_task, config=report_config)
 
-            assert (root / "report_TestWorkflow.pdf").exists()
+            assert (root / "TestWorkflow_specifications.pdf").exists()
             assert pdfdiff(
-                root / "report_TestWorkflow.pdf",
+                root / "TestWorkflow_specifications.pdf",
                 data_dir / "test_report_before_run" / "report_latexpdf_with_config.pdf",
             )
 
@@ -1132,13 +1179,21 @@ class TestValidationWorkflow:
             self, tmpdir, dataset_df_path, data_dir, TestNestedWorkflow, report_config
         ):
             root = tmpdir / "rst2pdf_nested"
-            root.mkdir()
-            report_task = TestNestedWorkflow(dataset_df=dataset_df_path, result_path=str(root))
-            report.make_report(report_task, config=report_config)
+            assert luigi.build(
+                [
+                    TestNestedWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        specifications_only=True,
+                        report_config=report_config,
+                    )
+                ],
+                local_scheduler=True,
+            )
 
-            assert (root / "report_TestNestedWorkflow.pdf").exists()
+            assert (root / "TestNestedWorkflow_specifications.pdf").exists()
             assert pdfdiff(
-                root / "report_TestNestedWorkflow.pdf",
+                root / "TestNestedWorkflow_specifications.pdf",
                 data_dir / "test_report_before_run" / "report_rst2pdf_nested.pdf",
                 threshold=25,
             )

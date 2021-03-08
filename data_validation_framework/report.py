@@ -184,5 +184,6 @@ def make_report(root, use_data=True, config=None):
         else:  # pragma: no cover
             input_path = build_path / root.report_type / "report.pdf"
 
+        Path(report_path).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(input_path, report_path)
         L.info("The report was generated here: %s", report_path)

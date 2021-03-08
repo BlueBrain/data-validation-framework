@@ -545,6 +545,10 @@ class ValidationWorkflow(SetValidationTask):
         default=None,
         description=":dict: The configuration used by Sphinx to build the report.",
     )
+    specifications_only = BoolParameter(
+        default=False,
+        description=":bool: Only outputs the dataset specification document.",
+    )
 
     gather_inputs = True
 
@@ -558,8 +562,7 @@ class ValidationWorkflow(SetValidationTask):
             L.debug("Generating report of %s", current_task)
             if current_task.generate_report:
                 try:
-                    # current_task.make_report()
-                    make_report(current_task)
+                    make_report(current_task, config=self.report_config)
                 # pylint: disable=broad-except
                 except Exception as e:  # pragma: no cover
                     L.error(
@@ -568,6 +571,13 @@ class ValidationWorkflow(SetValidationTask):
                     )
 
         super().__init__(*args, **kwargs)
+
+        if self.specifications_only:
+            if not self.report_path:
+                self.report_path = f"{self.task_name}_specifications.pdf"
+            make_report(self, use_data=False, config=self.report_config)
+
+            self.complete = lambda: True
 
     @staticmethod
     def validation_function(*args, **kwargs):
