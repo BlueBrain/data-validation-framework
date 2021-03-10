@@ -1,8 +1,10 @@
 """Test the data_validation_framework.util module."""
 # pylint: disable=missing-function-docstring
+import os
 import re
 
 import pandas as pd
+import pytest
 
 from data_validation_framework import result
 from data_validation_framework import util
@@ -53,34 +55,55 @@ def test_check_missing_columns():
     ]
 
 
-def test_apply_to_df():
-    df = result.ValidationResultSet(
-        pd.DataFrame(
-            {"is_valid": [True, False, True], "a": [1, 2, 3], "b": [4, 5, 6], ("c", "d"): [7, 8, 9]}
-        ),
-        output_columns={"new_data": None},
+def _tested_func(row, arg1, arg2):
+    if row["b"] == 6:
+        raise ValueError("test 'b' value")
+    return result.ValidationResult(
+        True, new_data=f"{row['is_valid']}_{arg1}_{arg2}", pid=os.getpid()
     )
 
-    def func(row, arg1, arg2):
-        if row["b"] == 6:
-            raise ValueError("test 'b' value")
-        return result.ValidationResult(True, new_data=f"{row['is_valid']}_{arg1}_{arg2}")
 
-    res = util.apply_to_df(df, func, "val1", "val2")
+@pytest.mark.parametrize("nb_processes", [None, 1, 2])
+def test_apply_to_df(nb_processes):
+    df = result.ValidationResultSet(
+        pd.DataFrame(
+            {
+                "is_valid": [True, False, True, True],
+                "a": [1, 2, 3, 4],
+                "b": [4, 5, 6, 7],
+                ("c", "d"): [7, 8, 9, 10],
+            }
+        ),
+        output_columns={"new_data": None, "pid": None},
+    )
+
+    res = util.apply_to_df(df, _tested_func, nb_processes, "val1", "val2")
 
     res_dict = res.to_dict()
     exception = res_dict.pop("exception")
+    res_dict.pop("pid")
     assert res_dict == {
-        "is_valid": {0: True, 1: False, 2: False},
-        "ret_code": {0: 0, 1: 1, 2: 1},
-        "comment": {0: None, 1: None, 2: None},
-        "a": {0: 1, 1: 2, 2: 3},
-        "b": {0: 4, 1: 5, 2: 6},
-        "new_data": {0: "True_val1_val2", 1: None, 2: None},
-        ("c", "d"): {0: 7, 1: 8, 2: 9},
+        "is_valid": {0: True, 1: False, 2: False, 3: True},
+        "ret_code": {0: 0, 1: 1, 2: 1, 3: 0},
+        "comment": {0: None, 1: None, 2: None, 3: None},
+        "a": {0: 1, 1: 2, 2: 3, 3: 4},
+        "b": {0: 4, 1: 5, 2: 6, 3: 7},
+        "new_data": {0: "True_val1_val2", 1: None, 2: None, 3: "True_val1_val2"},
+        ("c", "d"): {0: 7, 1: 8, 2: 9, 3: 10},
     }
     assert exception[0] is None
     assert exception[1] is None
+    assert exception[3] is None
+
+    assert res["pid"].isnull().tolist() == [False, True, True, False]
+    if nb_processes is None or nb_processes == 1:
+        assert res.loc[0, "pid"] >= 0
+        assert res.loc[0, "pid"] == res.loc[3, "pid"]
+    else:
+        assert res.loc[0, "pid"] >= 0
+        assert res.loc[3, "pid"] >= 0
+        assert res.loc[0, "pid"] != res.loc[3, "pid"]
+        assert len(res.loc[~res["pid"].isnull(), "pid"].unique()) == nb_processes
 
     exception_lines = exception[2].split("\n")
     assert exception_lines[0] == "Traceback (most recent call last):"
@@ -92,5 +115,6 @@ def test_apply_to_df():
         is not None
     )
     assert (
-        re.match(r"  File \"(\/.*?\.[\w:]+)\", line \d+, in func", exception_lines[3]) is not None
+        re.match(r"  File \"(\/.*?\.[\w:]+)\", line \d+, in _tested_func", exception_lines[3])
+        is not None
     )

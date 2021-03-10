@@ -10,9 +10,10 @@ import luigi
 import pandas as pd
 from luigi.parameter import ChoiceParameter
 from luigi.parameter import DictParameter
-from luigi.parameter import OptionalParameter
 from luigi.task import flatten as task_flatten
 from luigi_tools.parameter import BoolParameter
+from luigi_tools.parameter import OptionalIntParameter
+from luigi_tools.parameter import OptionalStrParameter
 from luigi_tools.task import LogTargetMixin
 from luigi_tools.task import RerunMixin
 from numpy import VisibleDeprecationWarning
@@ -37,7 +38,7 @@ class TagResultOutputMixin:
     tag_output = BoolParameter(
         default=False, description=":bool: Add a tag suffix to the output directory."
     )
-    result_path = OptionalParameter(
+    result_path = OptionalStrParameter(
         default=None, description=":str: Path to the global output directory."
     )
 
@@ -89,11 +90,11 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     """
 
     # I/O Parameters
-    dataset_df = OptionalParameter(default=None, description=":str: Path to the input dataset.")
-    input_index_col = OptionalParameter(
+    dataset_df = OptionalStrParameter(default=None, description=":str: Path to the input dataset.")
+    input_index_col = OptionalStrParameter(
         default=None, description=":str: Name of the column used as index."
     )
-    data_dir = OptionalParameter(
+    data_dir = OptionalStrParameter(
         default="data",
         description=(
             ":str: name of folder to store addittional files created by a task (the provided "
@@ -102,7 +103,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     )
 
     # Naming Parameters
-    custom_task_name = OptionalParameter(
+    custom_task_name = OptionalStrParameter(
         default=None,
         significant=False,
         description=(
@@ -129,6 +130,12 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     """int: Total number of valid elements."""
     results = None
     """pandas.DataFrame: The results of the :meth:`validation_function`."""
+
+    nb_processes = OptionalIntParameter(
+        default=None,
+        description=":int: The number of parallel processes to use.",
+        significant=False,
+    )
 
     def __init__(self, *args, **kwargs):
         warnings.filterwarnings("ignore", module="numpy", category=VisibleDeprecationWarning)
@@ -209,6 +216,8 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                     req.input_index_col = self.input_index_col
                 if req.result_path is None:
                     req.result_path = self.result_path
+                if hasattr(req, "nb_processes") and req.nb_processes is None:
+                    req.nb_processes = self.nb_processes
             return requires
         return []
 
@@ -227,7 +236,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def validation_function(*args, **kwargs):  # pragma: no cover
         """The validation function to apply to the current data set."""
         raise ValueError(
-            "You must set the 'validation_function' attibute of the class to a reference to a "
+            "You must set the 'validation_function' attribute of the class to a reference to a "
             "function."
         )
 
@@ -482,7 +491,12 @@ class ElementValidationTask(BaseValidationTask):
 
     def _process(self, df, *args, **kwargs):
         return apply_to_df(
-            df, self.validation_function, self.output()["data"].pathlib_path, *args, **kwargs
+            df,
+            self.validation_function,
+            self.nb_processes,
+            self.output()["data"].pathlib_path,
+            *args,
+            **kwargs,
         )
 
 
@@ -532,7 +546,9 @@ class SetValidationTask(BaseValidationTask):
 class ValidationWorkflow(SetValidationTask):
     """Class to define and process a validation workflow."""
 
-    report_path = OptionalParameter(default=None, description=":str: Path to the workflow report.")
+    report_path = OptionalStrParameter(
+        default=None, description=":str: Path to the workflow report."
+    )
     generate_report = BoolParameter(
         default=True, description=":bool: Trigger the report generation."
     )

@@ -2,17 +2,46 @@
 import logging
 import sys
 import traceback
+from itertools import repeat
+from multiprocessing import Pool
+from multiprocessing import current_process
 
-from tqdm import tqdm
-
-tqdm.pandas()
+import numpy as np
+import pandas as pd
+from tqdm.auto import tqdm
 
 L = logging.getLogger(__name__)
 
 
-def apply_to_df(df, func, *args, **kwargs):
+def _apply_to_df_internal(data):
+    df, args, kwargs = data
+    process_name = current_process().name
+    if process_name != "MainProcess":
+        pid = int(current_process().name.split("-")[1])
+        tqdm.pandas(position=pid)
+    else:
+        tqdm.pandas()
+    return df.progress_apply(try_operation, axis=1, args=args, **kwargs)
+
+
+def apply_to_df(df, func, nb_processes, *args, **kwargs):
     """Apply a function to df rows using tqdm."""
-    return df.progress_apply(try_operation, axis=1, args=[func] + list(args), **kwargs)
+    if nb_processes is None or nb_processes == 1:
+        # Serial computation
+        return _apply_to_df_internal((df, ([func] + list(args)), kwargs))
+
+    # Parallel computation
+    nb_chunks = min(len(df), nb_processes)
+    chunks = np.array_split(df, nb_chunks)
+
+    with Pool(nb_processes) as pool:
+        results_list = pool.map(
+            _apply_to_df_internal,
+            zip(chunks, repeat([func] + list(args)), repeat(kwargs)),
+        )
+        pool.close()  # Only needed for coverage
+        pool.join()
+        return pd.concat(results_list)
 
 
 def try_operation(row, func, *args, **kwargs):
@@ -25,7 +54,7 @@ def try_operation(row, func, *args, **kwargs):
         row.loc[res.keys()] = list(res.values())
     except Exception:  # pylint: disable=broad-except
         exception = "".join(traceback.format_exception(*sys.exc_info()))
-        L.warning("Exception for combo %s: %s", row.name, exception)
+        L.warning("Exception for ID %s: %s", row.name, exception)
         row.exception = exception
         row.is_valid = False
         row.ret_code = 1

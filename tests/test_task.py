@@ -17,6 +17,7 @@ import pandas as pd
 import pause
 import pytest
 from diff_pdf_visually import pdfdiff
+from luigi_tools.parameter import OptionalStrParameter
 
 from data_validation_framework import report
 from data_validation_framework import result
@@ -364,7 +365,7 @@ class TestSetValidationTask:
         assert (tmpdir / "test_custom_task_name" / "report.csv").exists()
 
     def test_duplicated_index(self, tmpdir, TestTask):
-        dataset_df_path = tmpdir / "dataset.csv"
+        dataset_df_path = str(tmpdir / "dataset.csv")
         base_dataset_df = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 1, 0])
         base_dataset_df.to_csv(dataset_df_path, index=True, index_label="index_col")
 
@@ -387,7 +388,7 @@ class TestSetValidationTask:
         assert exceptions == [str(IndexError("The following index values are duplicated: [0, 1]"))]
 
     def test_change_index(self, tmpdir, TestTask):
-        dataset_df_path = tmpdir / "dataset.csv"
+        dataset_df_path = str(tmpdir / "dataset.csv")
         base_dataset_df = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 2, 3])
         base_dataset_df.to_csv(dataset_df_path, index=True, index_label="index_col")
 
@@ -423,7 +424,7 @@ class TestSetValidationTask:
 
     def test_missing_retcodes(self, tmpdir, dataset_df_path, TestTask):
         class TestTaskMissingRetcodes(TestTask):
-            mode = luigi.Parameter(default=None)
+            mode = OptionalStrParameter(default=None)
 
             def kwargs(self):
                 return {"mode": self.mode}
@@ -689,6 +690,25 @@ class TestElementValidationTask:
         assert result.loc[[0, 1], "exception"].isnull().all()
         assert result.loc[2, "exception"].split("\n")[5] == "ValueError: Incorrect value 3"
 
+    @pytest.mark.parametrize("nb_processes", [None, 1, 5])
+    def test_nb_processes(self, TestTask, dataset_df_path, tmpdir, nb_processes):
+        # Test that the number of processes is properly passed to the requirements
+
+        class TestWorkflow(task.ValidationWorkflow):
+            def inputs(self):
+                return {TestTask(): {}}
+
+        assert (
+            TestWorkflow(
+                dataset_df=dataset_df_path,
+                result_path=str(tmpdir / "out"),
+                nb_processes=nb_processes,
+            )
+            .requires()[0]
+            .nb_processes
+            == nb_processes
+        )
+
 
 class TestValidationWorkflow:
     """Test the data_validation_framework.task.ValidationWorkflow class."""
@@ -808,7 +828,7 @@ class TestValidationWorkflow:
                 """A test validation task."""
 
                 no_exception = luigi.BoolParameter(default=False)
-                mode = luigi.Parameter(default=None)
+                mode = OptionalStrParameter(default=None)
 
                 def kwargs(self):
                     return {
@@ -852,7 +872,7 @@ class TestValidationWorkflow:
                 """The global validation workflow."""
 
                 no_exception = luigi.BoolParameter(default=False)
-                mode = luigi.Parameter(default=None)
+                mode = OptionalStrParameter(default=None)
 
                 def inputs(self):
                     return {
