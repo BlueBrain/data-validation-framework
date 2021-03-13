@@ -63,7 +63,7 @@ def _tested_func(row, arg1, arg2):
     )
 
 
-@pytest.mark.parametrize("nb_processes", [None, 1, 2])
+@pytest.mark.parametrize("nb_processes", [None, 1, 2, 100])
 def test_apply_to_df(nb_processes):
     df = result.ValidationResultSet(
         pd.DataFrame(
@@ -103,7 +103,7 @@ def test_apply_to_df(nb_processes):
         assert res.loc[0, "pid"] >= 0
         assert res.loc[3, "pid"] >= 0
         assert res.loc[0, "pid"] != res.loc[3, "pid"]
-        assert len(res.loc[~res["pid"].isnull(), "pid"].unique()) == nb_processes
+        assert len(res.loc[~res["pid"].isnull(), "pid"].unique()) == min(nb_processes, len(df) - 2)
 
     exception_lines = exception[2].split("\n")
     assert exception_lines[0] == "Traceback (most recent call last):"
