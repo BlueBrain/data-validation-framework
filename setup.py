@@ -12,7 +12,7 @@ with open("README.rst", encoding="utf-8") as f:
 
 reqs = [
     "luigi",
-    "luigi-tools>=0.0.7",
+    "luigi-tools>=0.0.8",
     "pandas",
     "rst2pdf",
     "sphinx",

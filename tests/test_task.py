@@ -12,6 +12,7 @@ import time
 from shutil import which
 
 import luigi
+import luigi_tools
 import numpy as np
 import pandas as pd
 import pause
@@ -255,64 +256,124 @@ class TestSetValidationTask:
             )
         ]
 
-    def test_dataset_propagation(self, TestTask, dataset_df_path, tmpdir):
-        # Test that the dataset is properly passed to the requirements
+    class TestPropagation:
+        @pytest.fixture
+        def BaseTestTask(self, TestTask):
+            class BaseTestTask(TestTask):
+                def kwargs(self):
+                    return {
+                        "dataset_df": str(self.dataset_df),
+                        "result_path": str(self.result_path),
+                    }
 
-        class BaseTestTask(TestTask):
-            def kwargs(self):
-                return {"dataset_df": str(self.dataset_df), "result_path": str(self.result_path)}
+                @staticmethod
+                def validation_function(df, output_path, *args, **kwargs):
+                    with open(output_path / "test.json", "w") as f:
+                        json.dump(kwargs, f)
 
-            @staticmethod
-            def validation_function(df, output_path, *args, **kwargs):
-                with open(output_path / "test.json", "w") as f:
-                    json.dump(kwargs, f)
+                    TestTask.validation_function(df, output_path, *args, **kwargs)
 
-                TestTask.validation_function(df, output_path, *args, **kwargs)
+            return BaseTestTask
 
-        class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
-            def inputs(self):
-                return {BaseTestTask(): {}}
+        @pytest.fixture
+        def TestTaskPassDatasetAndResultPath(self, BaseTestTask):
+            class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
+                def inputs(self):
+                    return {BaseTestTask(): {}}
 
-            def kwargs(self):
-                return {"dataset_df": self.dataset_df}
+                @staticmethod
+                def validation_function(df, output_path, *args, **kwargs):
+                    assert df["is_valid"].all()
+                    assert (df["ret_code"] == 0).all()
+                    assert df["comment"].isnull().all()
+                    assert df["exception"].isnull().all()
+                    assert df["a"].tolist() == [1, 2]
 
-            @staticmethod
-            def validation_function(df, output_path, *args, **kwargs):
-                assert df["is_valid"].all()
-                assert (df["ret_code"] == 0).all()
-                assert df["comment"].isnull().all()
-                assert df["exception"].isnull().all()
-                assert df["a"].tolist() == [1, 2]
+                    df["a"] *= 100
+                    df.to_csv(output_path / "test.csv")
 
-                df["a"] *= 100
-                df.to_csv(output_path / "test.csv")
+            return TestTaskPassDatasetAndResultPath
 
-        assert luigi.build(
-            [
-                TestTaskPassDatasetAndResultPath(
-                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+        def test_dataset_propagation(
+            self, TestTaskPassDatasetAndResultPath, dataset_df_path, tmpdir
+        ):
+            # Test that the dataset is properly passed to the requirements
+            assert luigi.build(
+                [
+                    TestTaskPassDatasetAndResultPath(
+                        dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+                    )
+                ],
+                local_scheduler=True,
+            )
+
+            with open(tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.json") as f:
+                params = json.load(f)
+
+            assert params == {
+                "dataset_df": f"{tmpdir}/dataset.csv",
+                "result_path": f"{tmpdir}/out_pass_dataset",
+            }
+
+            result_1 = pd.read_csv(
+                tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.csv"
+            )
+            result_2 = pd.read_csv(
+                tmpdir
+                / "out_pass_dataset"
+                / "TestTaskPassDatasetAndResultPath"
+                / "data"
+                / "test.csv"
+            )
+            expected = pd.read_csv(tmpdir / "dataset.csv")
+            expected["a"] *= 10
+            assert result_1.equals(expected)
+            expected["a"] *= 10
+            assert result_2[["a", "b"]].equals(expected[["a", "b"]])
+
+        def test_dataset_propagation_with_config(
+            self, TestTaskPassDatasetAndResultPath, dataset_df_path, tmpdir
+        ):
+            # Test that the dataset is not propagated when a value is already given in the config
+            with luigi_tools.util.set_luigi_config(
+                {
+                    "BaseTestTask": {
+                        "result_path": str(tmpdir / "specific_out_path"),
+                    }
+                }
+            ):
+                assert luigi.build(
+                    [
+                        TestTaskPassDatasetAndResultPath(
+                            dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+                        )
+                    ],
+                    local_scheduler=True,
                 )
-            ],
-            local_scheduler=True,
-        )
 
-        with open(tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.json") as f:
-            params = json.load(f)
+            with open(tmpdir / "specific_out_path" / "BaseTestTask" / "data" / "test.json") as f:
+                params = json.load(f)
 
-        assert params == {
-            "dataset_df": f"{tmpdir}/dataset.csv",
-            "result_path": f"{tmpdir}/out_pass_dataset",
-        }
+            assert params == {
+                "dataset_df": f"{tmpdir}/dataset.csv",
+                "result_path": f"{tmpdir}/specific_out_path",
+            }
 
-        result_1 = pd.read_csv(tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.csv")
-        result_2 = pd.read_csv(
-            tmpdir / "out_pass_dataset" / "TestTaskPassDatasetAndResultPath" / "data" / "test.csv"
-        )
-        expected = pd.read_csv(tmpdir / "dataset.csv")
-        expected["a"] *= 10
-        assert result_1.equals(expected)
-        expected["a"] *= 10
-        assert result_2[["a", "b"]].equals(expected[["a", "b"]])
+            result_1 = pd.read_csv(
+                tmpdir / "specific_out_path" / "BaseTestTask" / "data" / "test.csv"
+            )
+            result_2 = pd.read_csv(
+                tmpdir
+                / "out_pass_dataset"
+                / "TestTaskPassDatasetAndResultPath"
+                / "data"
+                / "test.csv"
+            )
+            expected = pd.read_csv(tmpdir / "dataset.csv")
+            expected["a"] *= 10
+            assert result_1.equals(expected)
+            expected["a"] *= 10
+            assert result_2[["a", "b"]].equals(expected[["a", "b"]])
 
     def test_failing_validation_function(self, TestTask, dataset_df_path, tmpdir):
         # Test with a failing validation function

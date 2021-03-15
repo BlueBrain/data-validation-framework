@@ -216,7 +216,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                     req.input_index_col = self.input_index_col
                 if req.result_path is None:
                     req.result_path = self.result_path
-                if hasattr(req, "nb_processes") and req.nb_processes is None:
+                if req.nb_processes is None:
                     req.nb_processes = self.nb_processes
             return requires
         return []
@@ -458,13 +458,13 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
         return {
             "report": ReportTarget(
                 class_path / "report.csv",
-                # prefix=self.result_path,
+                prefix=self.result_path,
                 create_parent=False,  # Do not create the parent here because of the tagged output
                 task_name=self.task_name,
             ),
             "data": TaggedOutputLocalTarget(
-                # prefix=self.result_path,
                 class_path / self.data_dir,
+                prefix=self.result_path,
                 create_parent=False,  # Do not create the parent here because of the tagged output
             ),
         }
