@@ -1,30 +1,43 @@
 """Util functions."""
 import contextlib
 import logging
+import multiprocessing
+import queue
 import sys
+import threading
 import traceback
 from itertools import repeat
 from multiprocessing import Pool
-from multiprocessing import Queue
-from multiprocessing import current_process
 
 import numpy as np
 import pandas as pd
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
 
 L = logging.getLogger(__name__)
 
-tqdm.pandas()
+
+class StreamToQueue(DummyTqdmFile):
+    """Fake file-like stream object that redirects all prints to a Queue."""
+
+    def __init__(self, *args, message_queue=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message_queue = message_queue
+
+    def write(self, buf):
+        """Redirect write calls to the Queue."""
+        if len(buf.rstrip()) > 0:
+            self.message_queue.put(buf)
 
 
 @contextlib.contextmanager
-def _std_out_err_redirect_tqdm():
-    """Context manager used to redirect stdout to tqdm.write()."""
+def _std_out_err_redirect_func(*args, **kwargs):
+    """Context manager used to redirect stdout and stderr to tqdm.write()."""
     orig_out_err = sys.stdout, sys.stderr
     try:
-        sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
-        yield orig_out_err[0]
+        sys.stdout = StreamToQueue(sys.stdout, *args, **kwargs)
+        sys.stderr = StreamToQueue(sys.stderr, *args, **kwargs)
+        yield
     # Relay exceptions
     except Exception as exc:  # pragma: no cover
         raise exc
@@ -34,40 +47,73 @@ def _std_out_err_redirect_tqdm():
 
 
 def _tqdm_wrapper(*args, **kwargs):
-    _tqdm_wrapper._tqdm_queue.put(1)  # pylint: disable=protected-access
-    return try_operation(*args, **kwargs)
+    # pylint: disable=protected-access
+    _tqdm_wrapper._tqdm_queue.put(1)
+    with _std_out_err_redirect_func(message_queue=_tqdm_wrapper._message_queue):
+        res = try_operation(*args, **kwargs)
+    return res
 
 
-def _init_tqdm_global_queue(queue):
-    _tqdm_wrapper._tqdm_queue = queue  # pylint: disable=protected-access
+def _init_tqdm_global_queue(tqdm_queue, message_queue):
+    _tqdm_wrapper._tqdm_queue = tqdm_queue  # pylint: disable=protected-access
+    _tqdm_wrapper._message_queue = message_queue  # pylint: disable=protected-access
+
+
+def _reset_tqdm_global_queue():
+    _tqdm_wrapper._tqdm_queue = None  # pylint: disable=protected-access
+    _tqdm_wrapper._message_queue = None  # pylint: disable=protected-access
 
 
 def _apply_to_df_internal(data):
-    df, args, kwargs = data
-    process_name = current_process().name
-    # pylint: disable=no-else-return
-    if process_name != "MainProcess":
-        return df.apply(_tqdm_wrapper, axis=1, args=args, **kwargs)
-    else:
-        return df.progress_apply(try_operation, axis=1, args=args, **kwargs)
+    (num, df), args, kwargs = data
+    return num, df.apply(_tqdm_wrapper, axis=1, args=args, **kwargs)
+
+
+def tqdm_worker(progress_bar, tqdm_queue):
+    """Update progress bar using the Queue."""
+    while True:
+        db = tqdm_queue.get()
+        if db is None:
+            return
+        progress_bar.update(db)
+
+
+def message_worker(progress_bar, message_queue):
+    """Write a message without interfering with the progress bar using the message Queue."""
+    while True:
+        message = message_queue.get()
+        if message is None:
+            return
+        progress_bar.write(message)
 
 
 def apply_to_df(df, func, nb_processes, *args, **kwargs):
     """Apply a function to df rows using tqdm."""
-    if nb_processes is None or nb_processes == 1:
-        # Serial computation
-        return _apply_to_df_internal((df, ([func] + list(args)), kwargs))
-
-    # Parallel computation
     nb_jobs = len(df)
-    nb_chunks = min(nb_jobs, nb_processes)
-    chunks = np.array_split(df, nb_chunks)
-    queue = Queue()
 
-    with _std_out_err_redirect_tqdm() as orig_stdout:
-        with Pool(nb_chunks, _init_tqdm_global_queue, [queue]) as pool:
-            # Create the progress bar
-            progress_bar = tqdm(total=nb_jobs, file=orig_stdout, dynamic_ncols=True)
+    if nb_processes is None or nb_processes <= 1:
+        # Serial computation
+        is_parallel = False
+        tqdm_queue = queue.Queue()
+        message_queue = queue.Queue()
+    else:
+        # Parallel computation
+        is_parallel = True
+        nb_chunks = min(nb_jobs, nb_processes)
+        chunks = enumerate(np.array_split(df, nb_chunks))
+        tqdm_queue = multiprocessing.Queue()
+        message_queue = multiprocessing.Queue()
+
+    # Create the progress bar
+    progress_bar = tqdm(total=nb_jobs, dynamic_ncols=True)
+    tqdm_thread = threading.Thread(target=tqdm_worker, args=(progress_bar, tqdm_queue))
+    message_thread = threading.Thread(target=message_worker, args=(progress_bar, message_queue))
+
+    tqdm_thread.start()
+    message_thread.start()
+
+    if is_parallel:
+        with Pool(nb_chunks, _init_tqdm_global_queue, [tqdm_queue, message_queue]) as pool:
 
             # Start the computation
             results_list = pool.imap(
@@ -76,16 +122,27 @@ def apply_to_df(df, func, nb_processes, *args, **kwargs):
             )
             pool.close()
 
-            # Update progress bar using the Queue
-            for _ in range(nb_jobs):
-                db = queue.get()
-                progress_bar.update(db)
-
             # Wait for the last jobs to complete
             pool.join()
 
-    # Gather all results
-    all_res = pd.concat(results_list)
+        # Gather all results
+        all_res = pd.concat([j for i, j in sorted(results_list, key=lambda x: x[0])])
+
+    else:
+        _init_tqdm_global_queue(tqdm_queue, message_queue)
+        _, all_res = _apply_to_df_internal(((0, df), [func] + list(args), kwargs))
+        _reset_tqdm_global_queue()
+
+    # Terminate the threads
+    tqdm_queue.put_nowait(None)
+    message_queue.put_nowait(None)
+    tqdm_thread.join()
+    message_thread.join()
+
+    # Close the progress bar
+    progress_bar.close()
+
+    # Return the results
     return all_res
 
 

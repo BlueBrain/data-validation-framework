@@ -2,6 +2,7 @@
 # pylint: disable=missing-function-docstring
 import os
 import re
+import time
 
 import pandas as pd
 import pytest
@@ -56,6 +57,9 @@ def test_check_missing_columns():
 
 
 def _tested_func(row, arg1, arg2):
+    time.sleep(0.5)
+    print("SOMETHING")
+    print()
     if row["b"] == 6:
         raise ValueError("test 'b' value")
     return result.ValidationResult(
