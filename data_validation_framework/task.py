@@ -240,6 +240,16 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
             "function."
         )
 
+    def __getattribute__(self, name):
+        """Unbound the validation function if it is bounded to the current instance."""
+        if name == "validation_function":
+            func = super().__getattribute__(name)
+            if hasattr(func, "__func__"):
+                return func.__func__
+            return func
+
+        return super().__getattribute__(name)
+
     @staticmethod
     def check_inputs(inputs):
         """Check a given dict of inputs."""

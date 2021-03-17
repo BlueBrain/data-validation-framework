@@ -708,6 +708,22 @@ class TestSetValidationTask:
             "ignored: [2]"
         )
 
+    def test_external_function(self, dataset_df_path):
+        def external_function(df, output_path, *args, **kwargs):
+            assert args == [1, "a"]
+            assert kwargs == {"k1": 1, "k2": 2}
+
+        class TestExternalFunctionTask(task.ElementValidationTask):
+
+            args = [1, "a"]
+            kwargs = {"k1": 1, "k2": 2}
+            validation_function = external_function
+
+        assert luigi.build(
+            [TestExternalFunctionTask(dataset_df=dataset_df_path)],
+            local_scheduler=True,
+        )
+
 
 class TestElementValidationTask:
     """Test the data_validation_framework.task.ElementValidationTask class."""
