@@ -106,7 +106,7 @@ def build_rst(rst_file, tree, level=1, use_data=True):
     for task_obj, subtree in tree.items():
         sublevel = level + 1
         rst_file.heading_level(level, task_obj.task_name)
-        rst_file.add(cleandoc(task_obj.__doc__ or ""))
+        rst_file.add(cleandoc(task_obj.__specifications__))
         if use_data and task_obj.results is not None:
             df = task_obj.results.copy()
             succeeded = df.loc[df["is_valid"]]
