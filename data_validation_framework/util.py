@@ -35,8 +35,9 @@ def _std_out_err_redirect_func(*args, **kwargs):
     """Context manager used to redirect stdout and stderr to tqdm.write()."""
     orig_out_err = sys.stdout, sys.stderr
     try:
-        sys.stdout = StreamToQueue(sys.stdout, *args, **kwargs)
-        sys.stderr = StreamToQueue(sys.stderr, *args, **kwargs)
+        if _std_out_err_redirect_func._redirect:  # pylint: disable=protected-access
+            sys.stdout = StreamToQueue(sys.stdout, *args, **kwargs)
+            sys.stderr = StreamToQueue(sys.stderr, *args, **kwargs)
         yield
     # Relay exceptions
     except Exception as exc:  # pragma: no cover
@@ -54,14 +55,16 @@ def _tqdm_wrapper(*args, **kwargs):
     return res
 
 
-def _init_tqdm_global_queue(tqdm_queue, message_queue):
+def _init_tqdm_global_queue(tqdm_queue, message_queue, redirect=True):
     _tqdm_wrapper._tqdm_queue = tqdm_queue  # pylint: disable=protected-access
     _tqdm_wrapper._message_queue = message_queue  # pylint: disable=protected-access
+    _std_out_err_redirect_func._redirect = redirect  # pylint: disable=protected-access
 
 
 def _reset_tqdm_global_queue():
     _tqdm_wrapper._tqdm_queue = None  # pylint: disable=protected-access
     _tqdm_wrapper._message_queue = None  # pylint: disable=protected-access
+    _std_out_err_redirect_func._redirect = True  # pylint: disable=protected-access
 
 
 def _apply_to_df_internal(data):
@@ -87,9 +90,11 @@ def message_worker(progress_bar, message_queue):
         progress_bar.write(message)
 
 
-def apply_to_df(df, func, nb_processes, *args, **kwargs):
+def apply_to_df(df, func, *args, nb_processes=None, redirect_stdout=None, **kwargs):
     """Apply a function to df rows using tqdm."""
     nb_jobs = len(df)
+    if redirect_stdout is None:
+        redirect_stdout = True
 
     if nb_processes is None or nb_processes <= 1:
         # Serial computation
@@ -113,7 +118,11 @@ def apply_to_df(df, func, nb_processes, *args, **kwargs):
     message_thread.start()
 
     if is_parallel:
-        with Pool(nb_chunks, _init_tqdm_global_queue, [tqdm_queue, message_queue]) as pool:
+        with Pool(
+            nb_chunks,
+            _init_tqdm_global_queue,
+            [tqdm_queue, message_queue, redirect_stdout],
+        ) as pool:
 
             # Start the computation
             results_list = pool.imap(
@@ -129,9 +138,10 @@ def apply_to_df(df, func, nb_processes, *args, **kwargs):
         all_res = pd.concat([j for i, j in sorted(results_list, key=lambda x: x[0])])
 
     else:
-        _init_tqdm_global_queue(tqdm_queue, message_queue)
+        _init_tqdm_global_queue(tqdm_queue, message_queue, redirect_stdout)
         _, all_res = _apply_to_df_internal(((0, df), [func] + list(args), kwargs))
-        _reset_tqdm_global_queue()
+
+    _reset_tqdm_global_queue()
 
     # Terminate the threads
     tqdm_queue.put_nowait(None)

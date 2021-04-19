@@ -22,6 +22,10 @@ def test_ValidationResult():
     with pytest.raises(ValueError):
         result.ValidationResult(False, 0)
 
+    result.ValidationResult(True, 2, comment="test comment")
+    with pytest.warns(UserWarning):
+        result.ValidationResult(True, 2)
+
 
 class TestValidationResultSet:
     """Test the ValidationResultSet class."""

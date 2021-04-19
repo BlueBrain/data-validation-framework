@@ -57,7 +57,7 @@ endobj
 endobj
 10 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 693.8394 0 ] /Rect [ 80.01575 718.0394 146.1557 730.0394 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 693.8394 0 ] /Rect [ 80.01575 718.0394 160.6157 730.0394 ] /Subtype /Link /Type /Annot
 >>
 endobj
 11 0 obj
@@ -67,7 +67,7 @@ endobj
 endobj
 12 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 643.0394 0 ] /Rect [ 80.01575 700.0394 123.9257 712.0394 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 643.0394 0 ] /Rect [ 80.01575 700.0394 146.1557 712.0394 ] /Subtype /Link /Type /Annot
 >>
 endobj
 13 0 obj
@@ -77,42 +77,42 @@ endobj
 endobj
 14 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 610.2394 0 ] /Rect [ 100.0157 682.0394 141.1357 694.0394 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 592.2394 0 ] /Rect [ 80.01575 682.0394 123.9257 694.0394 ] /Subtype /Link /Type /Annot
 >>
 endobj
 15 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 610.2394 0 ] /Rect [ 549.6998 682.7894 555.2598 694.7894 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 592.2394 0 ] /Rect [ 549.6998 682.7894 555.2598 694.7894 ] /Subtype /Link /Type /Annot
 >>
 endobj
 16 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 561.8394 0 ] /Rect [ 120.0157 664.0394 186.1557 676.0394 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 559.4394 0 ] /Rect [ 100.0157 664.0394 183.9257 676.0394 ] /Subtype /Link /Type /Annot
 >>
 endobj
 17 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 561.8394 0 ] /Rect [ 549.6998 664.7894 555.2598 676.7894 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 559.4394 0 ] /Rect [ 549.6998 664.7894 555.2598 676.7894 ] /Subtype /Link /Type /Annot
 >>
 endobj
 18 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 412.6394 0 ] /Rect [ 100.0157 646.0394 208.3857 658.0394 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 511.0394 0 ] /Rect [ 120.0157 646.0394 263.9657 658.0394 ] /Subtype /Link /Type /Annot
 >>
 endobj
 19 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 412.6394 0 ] /Rect [ 549.6998 646.7894 555.2598 658.7894 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 511.0394 0 ] /Rect [ 549.6998 646.7894 555.2598 658.7894 ] /Subtype /Link /Type /Annot
 >>
 endobj
 20 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 364.2394 0 ] /Rect [ 120.0157 628.0394 200.6157 640.0394 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 418.8394 0 ] /Rect [ 120.0157 628.0394 186.1557 640.0394 ] /Subtype /Link /Type /Annot
 >>
 endobj
 21 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 364.2394 0 ] /Rect [ 549.6998 628.7894 555.2598 640.7894 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 40.01575 418.8394 0 ] /Rect [ 549.6998 628.7894 555.2598 640.7894 ] /Subtype /Link /Type /Annot
 >>
 endobj
 22 0 obj
@@ -158,13 +158,13 @@ endobj
 endobj
 27 0 obj
 <<
-/Author () /CreationDate (D:20210419151408-01'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20210419151408-01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+/Author () /CreationDate (D:20210419161836-01'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20210419161836-01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
   /Subject (\(unspecified\)) /Title () /Trapped /False
 >>
 endobj
 28 0 obj
 <<
-/Count 13 /First 29 0 R /Last 29 0 R /Type /Outlines
+/Count 12 /First 29 0 R /Last 29 0 R /Type /Outlines
 >>
 endobj
 29 0 obj
@@ -174,40 +174,38 @@ endobj
 endobj
 30 0 obj
 <<
-/Count 6 /Dest [ 25 0 R /XYZ 40.01575 747.0394 0 ] /First 31 0 R /Last 32 0 R /Parent 29 0 R /Title (TestWorkflow)
+/Count 6 /Dest [ 25 0 R /XYZ 40.01575 747.0394 0 ] /First 31 0 R /Last 33 0 R /Parent 29 0 R /Title (TestWorkflow)
 >>
 endobj
 31 0 obj
 <<
-/Dest [ 25 0 R /XYZ 40.01575 693.8394 0 ] /Next 32 0 R /Parent 30 0 R /Title (Failed features)
+/Dest [ 25 0 R /XYZ 40.01575 693.8394 0 ] /Next 32 0 R /Parent 30 0 R /Title (Validated features)
 >>
 endobj
 32 0 obj
 <<
-/Count 4 /Dest [ 25 0 R /XYZ 40.01575 643.0394 0 ] /First 33 0 R /Last 35 0 R /Parent 30 0 R /Prev 31 0 R 
-  /Title (Sub tasks)
+/Dest [ 25 0 R /XYZ 40.01575 643.0394 0 ] /Next 33 0 R /Parent 30 0 R /Prev 31 0 R /Title (Failed features)
 >>
 endobj
 33 0 obj
 <<
-/Count 1 /Dest [ 25 0 R /XYZ 40.01575 610.2394 0 ] /First 34 0 R /Last 34 0 R /Next 35 0 R /Parent 32 0 R 
-  /Title (TestTask)
+/Count 3 /Dest [ 25 0 R /XYZ 40.01575 592.2394 0 ] /First 34 0 R /Last 34 0 R /Parent 30 0 R /Prev 32 0 R 
+  /Title (Sub tasks)
 >>
 endobj
 34 0 obj
 <<
-/Dest [ 25 0 R /XYZ 40.01575 561.8394 0 ] /Parent 33 0 R /Title (Failed features)
+/Count 2 /Dest [ 25 0 R /XYZ 40.01575 559.4394 0 ] /First 35 0 R /Last 36 0 R /Parent 33 0 R /Title (TestTask_Warning)
 >>
 endobj
 35 0 obj
 <<
-/Count 1 /Dest [ 25 0 R /XYZ 40.01575 412.6394 0 ] /First 36 0 R /Last 36 0 R /Parent 32 0 R /Prev 33 0 R 
-  /Title (TestTask_Specifications)
+/Dest [ 25 0 R /XYZ 40.01575 511.0394 0 ] /Next 36 0 R /Parent 34 0 R /Title (Validated features with warnings)
 >>
 endobj
 36 0 obj
 <<
-/Dest [ 25 0 R /XYZ 40.01575 364.2394 0 ] /Parent 35 0 R /Title (Validated features)
+/Dest [ 25 0 R /XYZ 40.01575 418.8394 0 ] /Parent 34 0 R /Prev 35 0 R /Title (Failed features)
 >>
 endobj
 37 0 obj
@@ -283,7 +281,7 @@ endstream
 endobj
 40 0 obj
 <<
-/Length 2102
+/Length 2119
 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
@@ -333,7 +331,7 @@ Q
 q
 1 0 0 1 0 93 cm
 q
-BT 1 0 0 1 40 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Failed features) Tj T* ET
+BT 1 0 0 1 40 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Validated features) Tj T* ET
 Q
 Q
 q
@@ -346,7 +344,7 @@ Q
 q
 1 0 0 1 0 75 cm
 q
-BT 1 0 0 1 40 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Sub tasks) Tj T* ET
+BT 1 0 0 1 40 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Failed features) Tj T* ET
 Q
 Q
 q
@@ -359,7 +357,7 @@ Q
 q
 1 0 0 1 0 57 cm
 q
-BT 1 0 0 1 60 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (TestTask) Tj T* ET
+BT 1 0 0 1 40 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Sub tasks) Tj T* ET
 Q
 Q
 q
@@ -372,7 +370,7 @@ Q
 q
 1 0 0 1 0 39 cm
 q
-BT 1 0 0 1 80 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Failed features) Tj T* ET
+BT 1 0 0 1 60 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (TestTask_Warning) Tj T* ET
 Q
 Q
 q
@@ -385,7 +383,7 @@ Q
 q
 1 0 0 1 0 21 cm
 q
-BT 1 0 0 1 60 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (TestTask_Specifications) Tj T* ET
+BT 1 0 0 1 80 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Validated features with warnings) Tj T* ET
 Q
 Q
 q
@@ -398,7 +396,7 @@ Q
 q
 1 0 0 1 0 3 cm
 q
-BT 1 0 0 1 80 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Validated features) Tj T* ET
+BT 1 0 0 1 80 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (Failed features) Tj T* ET
 Q
 Q
 q
@@ -435,7 +433,7 @@ endstream
 endobj
 42 0 obj
 <<
-/Length 4404
+/Length 4417
 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
@@ -479,14 +477,14 @@ q
 n -10 0 525.2441 22.8 re B*
 Q
 q
-BT 1 0 0 1 0 2.8 Tm 16.8 TL /F3 14 Tf .12549 .262745 .360784 rg (Failed features) Tj T* ET
+BT 1 0 0 1 0 2.8 Tm 16.8 TL /F3 14 Tf .12549 .262745 .360784 rg (Validated features) Tj T* ET
 Q
 Q
 q
 1 0 0 1 40.01575 659.0394 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (0, 1) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (0) Tj T* ET
 Q
 Q
 q
@@ -498,11 +496,30 @@ q
 n -10 0 525.2441 22.8 re B*
 Q
 q
+BT 1 0 0 1 0 2.8 Tm 16.8 TL /F3 14 Tf .12549 .262745 .360784 rg (Failed features) Tj T* ET
+Q
+Q
+q
+1 0 0 1 40.01575 608.2394 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (1) Tj T* ET
+Q
+Q
+q
+1 0 0 1 40.01575 575.4394 cm
+q
+.8 .8 .8 RG
+.3 w
+.94902 .94902 .94902 rg
+n -10 0 525.2441 22.8 re B*
+Q
+q
 BT 1 0 0 1 0 2.8 Tm 16.8 TL /F3 14 Tf .12549 .262745 .360784 rg (Sub tasks) Tj T* ET
 Q
 Q
 q
-1 0 0 1 40.01575 595.8394 cm
+1 0 0 1 40.01575 545.0394 cm
 q
 .8 .8 .8 RG
 .3 w
@@ -510,18 +527,18 @@ q
 n -10 0 525.2441 20.4 re B*
 Q
 q
-BT 1 0 0 1 0 2.4 Tm 14.4 TL /F3 12 Tf .12549 .262745 .360784 rg (TestTask) Tj T* ET
+BT 1 0 0 1 0 2.4 Tm 14.4 TL /F3 12 Tf .12549 .262745 .360784 rg (TestTask_Warning) Tj T* ET
 Q
 Q
 q
-1 0 0 1 40.01575 577.8394 cm
+1 0 0 1 40.01575 527.0394 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (A test validation task.) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (A test validation task which can return warnings.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 40.01575 548.6394 cm
+1 0 0 1 40.01575 497.8394 cm
 q
 .8 .8 .8 RG
 .3 w
@@ -529,17 +546,17 @@ q
 n -10 0 525.2441 19.2 re B*
 Q
 q
-BT 1 0 0 1 0 2.2 Tm 13.2 TL /F3 11 Tf .12549 .262745 .360784 rg (Failed features) Tj T* ET
+BT 1 0 0 1 0 2.2 Tm 13.2 TL /F3 11 Tf .12549 .262745 .360784 rg (Validated features with warnings) Tj T* ET
 Q
 Q
 q
-1 0 0 1 40.01575 536.6394 cm
+1 0 0 1 40.01575 485.8394 cm
 Q
 q
-1 0 0 1 40.01575 536.6394 cm
+1 0 0 1 40.01575 485.8394 cm
 Q
 q
-1 0 0 1 40.01575 485.6394 cm
+1 0 0 1 40.01575 434.8394 cm
 q
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
@@ -585,7 +602,7 @@ q
 1 0 0 1 23 -3 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (return code: 1) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (return code: 2) Tj T* ET
 Q
 Q
 q
@@ -611,7 +628,7 @@ q
 1 0 0 1 23 -3 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (comment:) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (comment: a succeeding warning) Tj T* ET
 Q
 Q
 q
@@ -630,10 +647,28 @@ Q
 Q
 Q
 q
-1 0 0 1 40.01575 479.6394 cm
+1 0 0 1 40.01575 434.8394 cm
 Q
 q
-1 0 0 1 40.01575 428.6394 cm
+1 0 0 1 40.01575 405.6394 cm
+q
+.8 .8 .8 RG
+.3 w
+.94902 .94902 .94902 rg
+n -10 0 525.2441 19.2 re B*
+Q
+q
+BT 1 0 0 1 0 2.2 Tm 13.2 TL /F3 11 Tf .12549 .262745 .360784 rg (Failed features) Tj T* ET
+Q
+Q
+q
+1 0 0 1 40.01575 393.6394 cm
+Q
+q
+1 0 0 1 40.01575 393.6394 cm
+Q
+q
+1 0 0 1 40.01575 342.6394 cm
 q
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
@@ -679,7 +714,7 @@ q
 1 0 0 1 23 -3 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (return code: 1) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (return code: 3) Tj T* ET
 Q
 Q
 q
@@ -705,7 +740,7 @@ q
 1 0 0 1 23 -3 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (comment:) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (comment: a failing warning) Tj T* ET
 Q
 Q
 q
@@ -724,45 +759,7 @@ Q
 Q
 Q
 q
-1 0 0 1 40.01575 428.6394 cm
-Q
-q
-1 0 0 1 40.01575 398.2394 cm
-q
-.8 .8 .8 RG
-.3 w
-.94902 .94902 .94902 rg
-n -10 0 525.2441 20.4 re B*
-Q
-q
-BT 1 0 0 1 0 2.4 Tm 14.4 TL /F3 12 Tf .12549 .262745 .360784 rg (TestTask_Specifications) Tj T* ET
-Q
-Q
-q
-1 0 0 1 40.01575 380.2394 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (The specific doc only used in report.) Tj T* ET
-Q
-Q
-q
-1 0 0 1 40.01575 351.0394 cm
-q
-.8 .8 .8 RG
-.3 w
-.94902 .94902 .94902 rg
-n -10 0 525.2441 19.2 re B*
-Q
-q
-BT 1 0 0 1 0 2.2 Tm 13.2 TL /F3 11 Tf .12549 .262745 .360784 rg (Validated features) Tj T* ET
-Q
-Q
-q
-1 0 0 1 40.01575 333.0394 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (0, 1) Tj T* ET
-Q
+1 0 0 1 40.01575 342.6394 cm
 Q
 q
 1 0 0 1 34.01575 807.2126 cm
@@ -845,27 +842,27 @@ xref
 0000004754 00000 n 
 0000004896 00000 n 
 0000005033 00000 n 
-0000005150 00000 n 
-0000005300 00000 n 
-0000005449 00000 n 
-0000005553 00000 n 
-0000005717 00000 n 
-0000005824 00000 n 
-0000005911 00000 n 
-0000006710 00000 n 
-0000006835 00000 n 
-0000008989 00000 n 
-0000009114 00000 n 
-0000013570 00000 n 
-0000013647 00000 n 
-0000013681 00000 n 
-0000013715 00000 n 
-0000013749 00000 n 
-0000013783 00000 n 
+0000005153 00000 n 
+0000005283 00000 n 
+0000005433 00000 n 
+0000005574 00000 n 
+0000005708 00000 n 
+0000005825 00000 n 
+0000005912 00000 n 
+0000006711 00000 n 
+0000006836 00000 n 
+0000009007 00000 n 
+0000009132 00000 n 
+0000013601 00000 n 
+0000013678 00000 n 
+0000013712 00000 n 
+0000013746 00000 n 
+0000013780 00000 n 
+0000013814 00000 n 
 trailer
 <<
 /ID 
-[<5b188327e64a93c39ef3f50cb4e3cf7f><5b188327e64a93c39ef3f50cb4e3cf7f>]
+[<c264030fbf6bf90a8b3c697f5fd2e87a><c264030fbf6bf90a8b3c697f5fd2e87a>]
 % ReportLab generated PDF document -- digest (http://www.reportlab.com)
 
 /Info 27 0 R
@@ -873,5 +870,5 @@ trailer
 /Size 49
 >>
 startxref
-13817
+13848
 %%EOF

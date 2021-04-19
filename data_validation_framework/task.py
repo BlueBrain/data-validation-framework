@@ -12,6 +12,7 @@ from luigi.parameter import ChoiceParameter
 from luigi.parameter import DictParameter
 from luigi.task import flatten as task_flatten
 from luigi_tools.parameter import BoolParameter
+from luigi_tools.parameter import OptionalBoolParameter
 from luigi_tools.parameter import OptionalIntParameter
 from luigi_tools.parameter import OptionalStrParameter
 from luigi_tools.task import LogTargetMixin
@@ -137,6 +138,15 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
         significant=False,
     )
 
+    redirect_stdout = OptionalBoolParameter(
+        default=None,
+        description=(
+            ":bool: Capture stdout from the validation function to make it work with progress "
+            "bar. Disable it if you want to use PDB inside the validation function."
+        ),
+        significant=False,
+    )
+
     def __init__(self, *args, **kwargs):
         warnings.filterwarnings("ignore", module="numpy", category=VisibleDeprecationWarning)
         warnings.filterwarnings("ignore", module="luigi.task", category=DeprecationWarning)
@@ -218,6 +228,8 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                     req.result_path = self.result_path
                 if req.nb_processes is None:
                     req.nb_processes = self.nb_processes
+                if req.redirect_stdout is None:
+                    req.redirect_stdout = self.redirect_stdout
             return requires
         return []
 
@@ -503,9 +515,10 @@ class ElementValidationTask(BaseValidationTask):
         return apply_to_df(
             df,
             self.validation_function,
-            self.nb_processes,
             self.output()["data"].pathlib_path,
             *args,
+            nb_processes=self.nb_processes,
+            redirect_stdout=self.redirect_stdout,
             **kwargs,
         )
 

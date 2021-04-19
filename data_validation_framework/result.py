@@ -1,5 +1,6 @@
 """Util functions."""
 import logging
+import warnings
 from copy import deepcopy
 
 import pandas as pd
@@ -16,7 +17,8 @@ class ValidationResult(dict):
 
     * if not given, the `ret_code` is set to `0` if `is_valid` is `True`, else it is set to `1`.
     * if the given `ret_code` is inconsistent with the given `is_valid` value, a ValueError is
-        raised.
+        raised. The `ret_code` can have a value greater that 1 to mark a warning. In this case,
+        the `is_valid` value can be either `True` or `False`.
 
     Args:
         is_valid (bool): Validation state.
@@ -33,12 +35,12 @@ class ValidationResult(dict):
             else:
                 ret_code = 1
         else:
-            if is_valid and ret_code != 0:
-                raise ValueError("The 'ret_code' must be '0' when 'is_valid' is True.")
-            if not is_valid and ret_code <= 0:
-                raise ValueError(
-                    "The 'ret_code' must be greater than '0' when 'is_valid' is False."
-                )
+            if ret_code == 0 and not is_valid:
+                raise ValueError("The 'is_valid' must be True when 'ret_code' == 0.")
+            if ret_code == 1 and is_valid:
+                raise ValueError("The 'is_valid' must be False when 'ret_code' == 1.")
+            if ret_code not in [0, 1] and comment is None:
+                warnings.warn("A comment should be set when the 'ret_code' is greater that 1.")
 
         super().__init__(
             is_valid=is_valid, ret_code=ret_code, comment=comment, exception=exception, **kwargs

@@ -12,7 +12,7 @@ with open("README.rst", encoding="utf-8") as f:
 
 reqs = [
     "luigi",
-    "luigi-tools>=0.0.8",
+    "luigi-tools>=0.0.9",
     "pandas",
     "rst2pdf",
     "sphinx",
@@ -23,7 +23,7 @@ doc_reqs = [
 ]
 test_reqs = [
     "pause",
-    "diff_pdf_visually>=1.5.1,!=1.6.0,!=1.6.1",
+    "diff_pdf_visually>=1.6.2",
     "pytest",
     "pytest-cov",
     "pytest-html",

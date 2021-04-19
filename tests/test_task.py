@@ -786,6 +786,25 @@ class TestElementValidationTask:
             == nb_processes
         )
 
+    @pytest.mark.parametrize("redirect_stdout", [True, False])
+    def test_redirect_stdout(self, TestTask, dataset_df_path, tmpdir, redirect_stdout):
+        # Test that the number of processes is properly passed to the requirements
+
+        class TestWorkflow(task.ValidationWorkflow):
+            def inputs(self):
+                return {TestTask(): {}}
+
+        assert (
+            TestWorkflow(
+                dataset_df=dataset_df_path,
+                result_path=str(tmpdir / "out"),
+                redirect_stdout=redirect_stdout,
+            )
+            .requires()[0]
+            .redirect_stdout
+            == redirect_stdout
+        )
+
 
 class TestValidationWorkflow:
     """Test the data_validation_framework.task.ValidationWorkflow class."""
@@ -1062,7 +1081,7 @@ class TestValidationWorkflow:
         def test_report_all_succeed(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
-            root = tmpdir / "absolute_path"
+            root = tmpdir / "all_succeed"
             assert luigi.build(
                 [
                     TestWorkflow(
@@ -1084,7 +1103,7 @@ class TestValidationWorkflow:
         def test_report_all_fail(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
-            root = tmpdir / "absolute_path"
+            root = tmpdir / "all_fail"
             assert luigi.build(
                 [
                     TestWorkflow(
@@ -1101,6 +1120,51 @@ class TestValidationWorkflow:
             assert pdfdiff(
                 tmpdir / "report_test_all_fail.pdf",
                 data_dir / "test_report" / "report_rst2pdf_all_fail.pdf",
+            )
+
+        def test_report_warnings(
+            self, tmpdir, dataset_df_path, data_dir, default_report_config_test_date
+        ):
+            class TestTask_Warning(task.ElementValidationTask):
+                """A test validation task which can return warnings."""
+
+                @staticmethod
+                # pylint: disable=arguments-differ
+                def validation_function(row, output_path, *args, **kwargs):
+                    if row["a"] <= 1:
+                        return result.ValidationResult(
+                            is_valid=True, ret_code=2, comment="a succeeding warning"
+                        )
+                    if row["a"] <= 2:
+                        return result.ValidationResult(
+                            is_valid=False, ret_code=3, comment="a failing warning"
+                        )
+                    raise ValueError(f"Incorrect value {row['a']}")
+
+            class TestWorkflow(task.ValidationWorkflow):
+                """The global validation workflow."""
+
+                def inputs(self):
+                    return {
+                        TestTask_Warning(): {},
+                    }
+
+            root = tmpdir / "with_warnings"
+            assert luigi.build(
+                [
+                    TestWorkflow(
+                        dataset_df=dataset_df_path,
+                        result_path=str(root),
+                        report_path=str(tmpdir / "report_test_warnings.pdf"),
+                    )
+                ],
+                local_scheduler=True,
+            )
+            assert (root / "TestWorkflow" / "report.csv").exists()
+            assert (tmpdir / "report_test_warnings.pdf").exists()
+            assert pdfdiff(
+                tmpdir / "report_test_warnings.pdf",
+                data_dir / "test_report" / "report_rst2pdf_warnings.pdf",
             )
 
     class TestReportBeforeRun:

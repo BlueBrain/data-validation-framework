@@ -57,7 +57,7 @@ def test_check_missing_columns():
 
 
 def _tested_func(row, arg1, arg2):
-    time.sleep(0.5)
+    time.sleep(1)
     print("SOMETHING")
     print()
     if row["b"] == 6:
@@ -68,7 +68,8 @@ def _tested_func(row, arg1, arg2):
 
 
 @pytest.mark.parametrize("nb_processes", [None, 1, 2, 100])
-def test_apply_to_df(nb_processes):
+@pytest.mark.parametrize("redirect_stdout", [True, False])
+def test_apply_to_df(nb_processes, redirect_stdout):
     df = result.ValidationResultSet(
         pd.DataFrame(
             {
@@ -81,7 +82,14 @@ def test_apply_to_df(nb_processes):
         output_columns={"new_data": None, "pid": None},
     )
 
-    res = util.apply_to_df(df, _tested_func, nb_processes, "val1", "val2")
+    res = util.apply_to_df(
+        df,
+        _tested_func,
+        "val1",
+        "val2",
+        nb_processes=nb_processes,
+        redirect_stdout=redirect_stdout,
+    )
 
     res_dict = res.to_dict()
     exception = res_dict.pop("exception")

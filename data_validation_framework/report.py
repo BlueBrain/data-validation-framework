@@ -82,16 +82,18 @@ def build_subtree(node, deps, known_nodes=None):
     return subtree
 
 
-def failed_block(row, rst_file, indent=0, max_length=100):
+def description_block(row, rst_file, indent=0, max_length=100):
     """Create a block for a failed feature."""
     list_indent = indent + 4
     rst_file.list([row.name], indent=indent)
+    bullets = [
+        f"return code: {row.ret_code}",
+        f"comment: {row.comment}",
+    ]
+    if row.exception:
+        bullets.append("exception:")
     rst_file.list(
-        [
-            f"return code: {row.ret_code}",
-            f"comment: {row.comment}",
-            "exception:",
-        ],
+        bullets,
         indent=list_indent,
         width=max_length - list_indent,
     )
@@ -111,8 +113,19 @@ def build_rst(rst_file, tree, level=1, use_data=True):
             df = task_obj.results.copy()
             succeeded = df.loc[df["is_valid"]]
             if len(succeeded) > 0:
-                rst_file.heading_level(sublevel, "Validated features")
-                rst_file.add(", ".join(sorted(succeeded.index.astype(str).tolist())))
+                without_comment = succeeded.loc[
+                    (succeeded["comment"].isnull()) | (succeeded["comment"] == "")
+                ]
+                if len(without_comment) > 0:
+                    rst_file.heading_level(sublevel, "Validated features")
+                    rst_file.add(", ".join(sorted(without_comment.index.astype(str).tolist())))
+
+                with_comment = succeeded.loc[
+                    (~succeeded["comment"].isnull()) & (succeeded["comment"] != "")
+                ]
+                if len(with_comment) > 0:
+                    rst_file.heading_level(sublevel, "Validated features with warnings")
+                    with_comment.apply(lambda x: description_block(x, rst_file), axis=1)
             if subtree:
                 failed = df.loc[~df["is_valid"]]
                 if len(failed) > 0:
@@ -122,7 +135,7 @@ def build_rst(rst_file, tree, level=1, use_data=True):
                 failed = df.loc[(~df["is_valid"]) & (~df["ret_code"].isnull())].sort_index()
                 if len(failed) > 0:
                     rst_file.heading_level(sublevel, "Failed features")
-                    failed.apply(lambda x: failed_block(x, rst_file), axis=1)
+                    failed.apply(lambda x: description_block(x, rst_file), axis=1)
 
         if subtree:
             rst_file.heading_level(sublevel, "Sub tasks")
