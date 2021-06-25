@@ -15,7 +15,7 @@ reqs = [
     "luigi-tools>=0.0.9",
     "pandas",
     "rst2pdf",
-    "sphinx",
+    "sphinx>=3,<4",
     "tqdm",
 ]
 doc_reqs = [
@@ -42,7 +42,7 @@ setup(
     url="https://bbpteam.epfl.ch/documentation/projects/data-validation-framework",
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/CELLS/issues",
-        "Source": "ssh://bbpcode.epfl.ch/common/data-validation-framework",
+        "Source": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework",
     },
     license="BBP-internal-confidential",
     packages=find_packages(exclude=["tests"]),
