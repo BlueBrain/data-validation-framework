@@ -548,12 +548,12 @@ class SetValidationTask(BaseValidationTask):
 
         # Check that return codes are consistent with validity values
         if (
-            not df.loc[(df["is_valid"]) & (df["ret_code"] != 0)].empty
-            or not df.loc[(~df["is_valid"]) & (df["ret_code"] <= 0)].empty
+            not df.loc[(df["is_valid"]) & (df["ret_code"] == 1)].empty
+            or not df.loc[(~df["is_valid"]) & (df["ret_code"] == 0)].empty
         ):
-            raise ValidationError(
-                "The 'ret_code' values are not consistent with the 'is_valid' values."
-            )
+            raise ValueError("The 'ret_code' values are not consistent with the 'is_valid' values.")
+        if not df.loc[(df["comment"].isnull()) & (~df["ret_code"].isin([0, 1]))].empty:
+            warnings.warn("A comment should be set when the 'ret_code' is greater than 1.")
 
         # Fix missing values for return codes according to validity values
         df.loc[(df["is_valid"]) & (df["ret_code"].isnull()), "ret_code"] = 0

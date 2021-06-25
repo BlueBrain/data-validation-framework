@@ -23,7 +23,10 @@ def test_ValidationResult():
         result.ValidationResult(False, 0)
 
     result.ValidationResult(True, 2, comment="test comment")
-    with pytest.warns(UserWarning):
+
+    with pytest.warns(
+        UserWarning, match="A comment should be set when the 'ret_code' is greater than 1."
+    ):
         result.ValidationResult(True, 2)
 
 

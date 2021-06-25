@@ -26,6 +26,7 @@ _DEFAULT_REPORT_CONFIG = {
         "sphinx.ext.graphviz",
         "sphinx.ext.intersphinx",
         "sphinx.ext.napoleon",
+        "sphinx.ext.todo",
         "rst2pdf.pdfbuilder",
     ],
     "author": "",

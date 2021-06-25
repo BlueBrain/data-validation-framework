@@ -509,12 +509,12 @@ class TestSetValidationTask:
 
         failing_task_valid = TestTaskMissingRetcodes(
             dataset_df=dataset_df_path,
-            result_path=str(tmpdir / "out_failing_update_index"),
+            result_path=str(tmpdir / "out_missing_retcode"),
             mode="valid",
         )
         failing_task_notvalid = TestTaskMissingRetcodes(
             dataset_df=dataset_df_path,
-            result_path=str(tmpdir / "out_failing_update_index"),
+            result_path=str(tmpdir / "out_missing_retcode"),
             mode="not valid",
         )
         assert not luigi.build([failing_task_valid], local_scheduler=True)
@@ -532,6 +532,49 @@ class TestSetValidationTask:
             ]
             * 2
         )
+
+    def test_missing_comments(self, tmpdir, dataset_df_path, TestTask):
+        class TestTaskMissingComments(TestTask):
+            mode = OptionalStrParameter(default=None)
+
+            def kwargs(self):
+                return {"mode": self.mode}
+
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                if kwargs["mode"] == "valid":
+                    df["is_valid"] = True
+                    df["ret_code"] = 2
+                elif kwargs["mode"] == "not valid":
+                    df["is_valid"] = False
+                    df["ret_code"] = 2
+
+        failed_tasks = []
+        exceptions = []
+
+        @TestTaskMissingComments.event_handler(luigi.Event.FAILURE)
+        def check_exception(failed_task, exception):  # pylint: disable=unused-variable
+            failed_tasks.append(str(failed_task))
+            exceptions.append(str(exception))
+
+        failing_task_valid = TestTaskMissingComments(
+            dataset_df=dataset_df_path,
+            result_path=str(tmpdir / "out_missing_comments_valid"),
+            mode="valid",
+        )
+        failing_task_notvalid = TestTaskMissingComments(
+            dataset_df=dataset_df_path,
+            result_path=str(tmpdir / "out_missing_comments_not_valid"),
+            mode="not valid",
+        )
+        with pytest.warns(
+            UserWarning, match="A comment should be set when the 'ret_code' is greater than 1."
+        ):
+            assert luigi.build([failing_task_valid], local_scheduler=True)
+        with pytest.warns(
+            UserWarning, match="A comment should be set when the 'ret_code' is greater than 1."
+        ):
+            assert luigi.build([failing_task_notvalid], local_scheduler=True)
 
     def test_rename_multiindex(self):
         df_1_level = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 2, 3])
