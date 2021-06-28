@@ -1,5 +1,11 @@
 # Changelog
 
+## [data-validation-framework-v0.0.7](https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/compare/data-validation-framework-v0.0.6...data-validation-framework-v0.0.7)
+
+> 28 June 2021
+
+- Remove some warnings for exceptions in nested tasks (Adrien Berchet - [4e754ee](https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/commit/4e754ee0356b6643ee16ba6dafc4cd3ec9b099f9))
+
 ## data-validation-framework-v0.0.6
 
 > 28 June 2021
