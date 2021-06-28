@@ -130,6 +130,30 @@ class RstFile:
         """Add a heading of level 6 to the internal buffer."""
         self.heading(text, char=";", indent=indent)
 
+    def h7(self, text, indent=0):
+        """Add a heading of level 7 to the internal buffer."""
+        self.heading(text, char="_", indent=indent)
+
+    def h8(self, text, indent=0):
+        """Add a heading of level 8 to the internal buffer."""
+        self.heading(text, char="*", indent=indent)
+
+    def h9(self, text, indent=0):
+        """Add a heading of level 9 to the internal buffer."""
+        self.heading(text, char="#", indent=indent)
+
+    def h10(self, text, indent=0):
+        """Add a heading of level 10 to the internal buffer."""
+        self.heading(text, char=">", indent=indent)
+
+    def h11(self, text, indent=0):
+        """Add a heading of level 11 to the internal buffer."""
+        self.heading(text, char="<", indent=indent)
+
+    def h12(self, text, indent=0):
+        """Add a heading of level 12 to the internal buffer."""
+        self.heading(text, char=",", indent=indent)
+
     def heading_level(self, level, *args, **kwargs):
         """Add a heading of given level to the internal buffer."""
         level_headings = {
@@ -140,7 +164,18 @@ class RstFile:
             4: self.h4,
             5: self.h5,
             6: self.h6,
+            7: self.h7,
+            8: self.h8,
+            9: self.h9,
+            10: self.h10,
+            11: self.h11,
+            12: self.h12,
         }
+
+        if level not in level_headings:  # pragma: no cover
+            raise ValueError(
+                f"The 'level' value must be in {list(level_headings.keys())} but is {level}."
+            )
 
         return level_headings[level](*args, **kwargs)
 

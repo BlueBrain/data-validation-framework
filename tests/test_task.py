@@ -1081,6 +1081,68 @@ class TestValidationWorkflow:
                 data_dir / "test_report" / "report_no_exception_rst2pdf.pdf",
             )
 
+        def test_exception_levels(
+            self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
+        ):
+            class TestTask_levels(task.SetValidationTask):
+                """A test validation task with a deep level."""
+
+                @staticmethod
+                def validation_function(*args, **kwargs):
+                    raise ValueError("Bad value")
+
+            class TestWorkflow_lvl4(task.ValidationWorkflow):
+                """A nested validation workflow with level 3."""
+
+                def inputs(self):
+                    return {
+                        TestTask_levels(): {},
+                    }
+
+            class TestWorkflow_lvl3(task.ValidationWorkflow):
+                """A nested validation workflow with level 3."""
+
+                def inputs(self):
+                    return {
+                        TestWorkflow_lvl4(): {},
+                    }
+
+            class TestWorkflow_lvl2(task.ValidationWorkflow):
+                """A nested validation workflow with level 2."""
+
+                def inputs(self):
+                    return {
+                        TestWorkflow_lvl3(): {},
+                    }
+
+            class TestWorkflow_lvl1(task.ValidationWorkflow):
+                """A nested validation workflow with level 1."""
+
+                def inputs(self):
+                    return {
+                        TestWorkflow_lvl2(): {},
+                    }
+
+            class TestWorkflow_lvl0(task.ValidationWorkflow):
+                """The global validation workflow."""
+
+                def inputs(self):
+                    return {
+                        TestWorkflow_lvl1(): {},
+                    }
+
+            root = tmpdir / "rst2pdf_levels"
+            assert luigi.build(
+                [TestWorkflow_lvl0(dataset_df=dataset_df_path, result_path=str(root))],
+                local_scheduler=True,
+            )
+            assert (root / "TestWorkflow_lvl0" / "report.csv").exists()
+            assert (root / "report_TestWorkflow_lvl4.pdf").exists()
+            assert (root / "report_TestWorkflow_lvl3.pdf").exists()
+            assert (root / "report_TestWorkflow_lvl2.pdf").exists()
+            assert (root / "report_TestWorkflow_lvl1.pdf").exists()
+            assert (root / "report_TestWorkflow_lvl0.pdf").exists()
+
         def test_report_relative_path(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):

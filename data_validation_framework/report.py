@@ -101,7 +101,8 @@ def description_block(row, rst_file, indent=0, max_length=100):
     if row.exception:
         rst_file.code_block("Bash", indent + 8)
         exception_indent = indent + 12
-        rst_file.exception(row.exception, exception_indent, width=80 - exception_indent)
+        exception_width = max(20, max_length - exception_indent - 21)
+        rst_file.exception(row.exception, exception_indent, width=exception_width)
 
 
 def build_rst(rst_file, tree, level=1, use_data=True):
