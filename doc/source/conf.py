@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
+    "m2r2",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

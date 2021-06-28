@@ -13,6 +13,9 @@ include:
         - /ci/jobs/publish-package.yml
         - /ci/jobs/publish-docs.yml
         - /ci/jobs/tag.yml
+   - project: neuromath/ci
+     file:
+        - /ci/jobs/auto-release.yml
 
 py36:
   variables:

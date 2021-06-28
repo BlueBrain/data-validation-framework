@@ -19,6 +19,7 @@ reqs = [
     "tqdm",
 ]
 doc_reqs = [
+    "m2r2",
     "sphinx-bluebrain-theme",
 ]
 test_reqs = [
