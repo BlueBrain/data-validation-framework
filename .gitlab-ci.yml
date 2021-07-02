@@ -17,14 +17,5 @@ include:
      file:
         - /ci/jobs/auto-release.yml
 
-py36:
-  variables:
-    SYS_PACKAGES: graphviz poppler-utils ImageMagick
-
-py37:
-  variables:
-    SYS_PACKAGES: graphviz poppler-utils ImageMagick
-
-py38:
-  variables:
-    SYS_PACKAGES: graphviz poppler-utils ImageMagick
+.tox-template:
+  image: docker-registry-default.ocp.bbp.epfl.ch/bbp-ou-cells/data-validation-framework:latest
