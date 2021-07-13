@@ -626,6 +626,42 @@ class TestSetValidationTask:
                 {TestTask(): {"a": "a_conflict"}, TestConflictingColumns(): {"a": "a_conflict"}}
             )
 
+    def test_extra_requires(self, tmpdir, dataset_df_path):
+        class TestTaskA(luigi.Task):
+            def run(self):
+                assert self.output().path == str(tmpdir / "file.test")
+                with open(self.output().path, "w") as f:
+                    f.write("result of TestTaskA")
+
+            def output(self):
+                return target.OutputLocalTarget(tmpdir / "file.test")
+
+        class TestTaskB(task.SetValidationTask):
+
+            output_columns = {"extra_path": None, "extra_result": None}
+
+            def kwargs(self):
+                return {"extra_task_target": self.extra_input().path}
+
+            def extra_requires(self):
+                return TestTaskA()
+
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                df["is_valid"] = True
+                df["extra_path"] = kwargs["extra_task_target"]
+                with open(kwargs["extra_task_target"]) as f:
+                    df["extra_result"] = f.read()
+
+        assert luigi.build(
+            [TestTaskB(dataset_df=dataset_df_path, result_path=str(tmpdir / "extra_requires"))],
+            local_scheduler=True,
+        )
+
+        res = pd.read_csv(tmpdir / "extra_requires" / "TestTaskB" / "report.csv")
+        assert (res["extra_path"] == str(tmpdir / "file.test")).all()
+        assert (res["extra_result"] == "result of TestTaskA").all()
+
     def test_static_args_kwargs(self, dataset_df_path):
         class TestTask(task.ElementValidationTask):
 

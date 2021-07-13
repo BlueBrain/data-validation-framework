@@ -99,8 +99,8 @@ validation. The sub-tasks can be either a ``dvf.task.ElementValidationTask`` or 
 ``dvf.task.SetValidationTask``. In both cases, you can define relations between these sub-tasks
 since one could need the result of another one to run properly. This is defined in two steps:
 
-1. in the required task, a ``output_columns`` attribut should be defined so that the next tasks can
-   know what data is available, as shown in the previous example for the ``ValidationTask1``.
+1. in the required task, a ``output_columns`` attribute should be defined so that the next tasks
+   can know what data is available, as shown in the previous example for the ``ValidationTask1``.
 2. in the task that requires another task, a ``inputs`` method should be defined, as shown in the
    previous example for the ``ValidationTask2``.
 
@@ -118,11 +118,11 @@ The specifications that the data should follow can be generated with the followi
 
     luigi --module test_validation ValidationWorkflow --log-level INFO --local-scheduler --result-path out --ValidationTask2-a-parameter 15 --specifications-only
 
-Runing a workflow
-~~~~~~~~~~~~~~~~~
+Running a workflow
+~~~~~~~~~~~~~~~~~~
 
-The workflow can be run with the following luigi command (note that the module
-`test_validation` must be available in your ``sys.path``):
+The workflow can be run with the following luigi command (note that the module `test_validation`
+must be available in your ``sys.path``):
 
 .. code-block:: Bash
 
@@ -142,3 +142,39 @@ This workflow will generate the following files:
 
     As any `luigi <https://luigi.readthedocs.io/en/stable>`_ workflow, the values can be stored
     into a `luigi.cfg` file instead of being passed to the CLI.
+
+Advanced features
+~~~~~~~~~~~~~~~~~
+
+Require a regular Luigi task
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In some cases, one want to execute a regular Luigi task in a validation workflow. In this case, it
+is possible to use the `extra_requires()` method to pass these extra requirements. In the
+validation task it is then possible to get the targets of these extra requirements using the
+`extra_input()` method.
+
+.. code-block:: Python
+
+    class TestTaskA(luigi.Task):
+
+        def run(self):
+            # Do something and write the 'target.file'
+
+        def output(self):
+            return target.OutputLocalTarget("target.file")
+
+    class TestTaskB(task.SetValidationTask):
+
+        output_columns = {"extra_target_path": None}
+
+        def kwargs(self):
+            return {"extra_task_target_path": self.extra_input().path}
+
+        def extra_requires(self):
+            return TestTaskA()
+
+        @staticmethod
+        def validation_function(df, output_path, *args, **kwargs):
+            df["is_valid"] = True
+            df["extra_target_path"] = kwargs["extra_task_target_path"]

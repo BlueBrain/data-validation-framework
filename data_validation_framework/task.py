@@ -140,6 +140,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
 
     redirect_stdout = OptionalBoolParameter(
         default=None,
+        parsing=luigi.BoolParameter.EXPLICIT_PARSING,
         description=(
             ":bool: Capture stdout from the validation function to make it work with progress "
             "bar. Disable it if you want to use PDB inside the validation function."
@@ -230,8 +231,18 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                     req.nb_processes = self.nb_processes
                 if req.redirect_stdout is None:
                     req.redirect_stdout = self.redirect_stdout
-            return requires
+        else:
+            requires = []
+        return requires + task_flatten(self.extra_requires())
+
+    def extra_requires(self):
+        """Requirements that should not be considered as validation tasks."""
+        # pylint: disable=no-self-use
         return []
+
+    def extra_input(self):
+        """Targets of the tasks given to extra_requires()."""
+        return luigi.task.getpaths(self.extra_requires())
 
     @staticmethod
     def _rename_cols(df):
@@ -338,7 +349,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                     for target in task_flatten(i.output())
                     if isinstance(target, ReportTarget)
                 ]
-                for i in task_flatten(self.requires())
+                for i in task_flatten(self.inputs().keys())
             }
             all_report_paths = {
                 t: [r.path for r in reports][0] for t, reports in all_inputs.items()
