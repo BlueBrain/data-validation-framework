@@ -1,7 +1,9 @@
+"""Setup for the data-validation-framework package."""
 import imp
 import sys
 
-from setuptools import find_packages, setup
+from setuptools import find_packages
+from setuptools import setup
 
 if sys.version_info < (3, 6):
     sys.exit("Sorry, Python < 3.6 is not supported")

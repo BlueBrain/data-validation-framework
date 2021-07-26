@@ -5,9 +5,6 @@ include:
         - /ci/jobs/check-version.yml
         - /ci/jobs/check-packaging.yml
         - /ci/jobs/lint.yml
-        - /ci/jobs/py36.yml
-        - /ci/jobs/py37.yml
-        - /ci/jobs/py38.yml
         - /ci/jobs/docs.yml
         - /ci/jobs/build-package.yml
         - /ci/jobs/publish-package.yml
@@ -16,6 +13,11 @@ include:
    - project: neuromath/ci
      file:
         - /ci/jobs/auto-release.yml
+        - /ci/lib/pytest-template.yml
+        - /ci/jobs/py36.yml
+        - /ci/jobs/py37.yml
+        - /ci/jobs/py38.yml
+        - /ci/jobs/coverage.yml
 
 .tox-template:
   image: docker-registry-default.ocp.bbp.epfl.ch/bbp-ou-cells/data-validation-framework:latest
