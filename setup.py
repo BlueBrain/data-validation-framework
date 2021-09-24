@@ -9,7 +9,7 @@ if sys.version_info < (3, 6):
     sys.exit("Sorry, Python < 3.6 is not supported")
 
 # Read the contents of the README file
-with open("README.rst", encoding="utf-8") as f:
+with open("README.md", encoding="utf-8") as f:
     README = f.read()
 
 reqs = [
@@ -41,7 +41,7 @@ setup(
     version=VERSION,
     description="Simple framework to create data validation workflows.",
     long_description=README,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     url="https://bbpteam.epfl.ch/documentation/projects/data-validation-framework",
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/CELLS/issues",

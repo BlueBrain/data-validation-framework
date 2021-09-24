@@ -1,0 +1,7 @@
+Maintainer
+----------
+
+Adrien Berchet
+
+Contributors
+------------
