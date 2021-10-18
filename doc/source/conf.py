@@ -79,4 +79,5 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "pandas": ("https://pandas.pydata.org/docs", None),
     "luigi": ("https://luigi.readthedocs.io/en/stable", None),
+    "luigi-tools": ("https://luigi-tools.readthedocs.io/en/stable", None),
 }

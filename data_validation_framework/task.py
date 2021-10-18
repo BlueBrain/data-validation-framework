@@ -14,6 +14,7 @@ from luigi.task import flatten as task_flatten
 from luigi_tools.parameter import BoolParameter
 from luigi_tools.parameter import OptionalBoolParameter
 from luigi_tools.parameter import OptionalIntParameter
+from luigi_tools.parameter import OptionalPathParameter
 from luigi_tools.parameter import OptionalStrParameter
 from luigi_tools.task import LogTargetMixin
 from luigi_tools.task import RerunMixin
@@ -34,12 +35,23 @@ class ValidationError(Exception):
 
 
 class TagResultOutputMixin:
-    """Initialize target prefixes and optionally add a tag to the resut directory."""
+    """Initialize target prefixes and optionally add a tag to the resut directory.
+
+    .. warning::
+
+        If this mixin is used alongside the :class:`luigi_tools.task.RerunMixin`, then it can have
+        two different behaviors:
+
+        * if placed on the right side of the `RerunMixin`, a new tag is create and thus rerun does
+          not do anything.
+        * if placed on the left side of the `RerunMixin`, the untagged directory is remove then a
+          tagged directory is created.
+    """
 
     tag_output = BoolParameter(
         default=False, description=":bool: Add a tag suffix to the output directory."
     )
-    result_path = OptionalStrParameter(
+    result_path = OptionalPathParameter(
         default=None, description=":str: Path to the global output directory."
     )
 
@@ -58,10 +70,17 @@ class TagResultOutputMixin:
                 num += 1
                 tagged_output = num_tag(path, num)
 
+            if num > 0 and RerunMixin in self.__class__.mro() and self.rerun:
+                warnings.warn(
+                    "Using 'rerun' with conflicting tag output results in creating a new tag or "
+                    "removing the untagged result directory (depending on the inheritance order).",
+                )
+
             L.info("Tagged output is: %s", tagged_output)
             self.result_path = tagged_output
 
-        TaggedOutputLocalTarget.set_default_prefix(self.result_path)
+        if self.result_path is not None:
+            TaggedOutputLocalTarget.set_default_prefix(self.result_path)
 
 
 class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi.Task):
@@ -488,16 +507,17 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def output(self):
         """The targets of the current task."""
         class_path = Path(self.task_name)
+        prefix = None if self.result_path is None else self.result_path.absolute()
         return {
             "report": ReportTarget(
                 class_path / "report.csv",
-                prefix=self.result_path,
+                prefix=prefix,
                 create_parent=False,  # Do not create the parent here because of the tagged output
                 task_name=self.task_name,
             ),
             "data": TaggedOutputLocalTarget(
                 class_path / self.data_dir,
-                prefix=self.result_path,
+                prefix=prefix,
                 create_parent=False,  # Do not create the parent here because of the tagged output
             ),
         }

@@ -39,41 +39,92 @@ def dataset_df_path(tmpdir):
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-def test_TagResultOutputMixin(tmpdir):
+class TestTagResultOutputMixin:
     """Test the data_validation_framework.task.TagResultOutputMixin class."""
 
-    class TestTask(task.TagResultOutputMixin, luigi.Task):
+    def test_default(self, tmpdir):
+        """Test the simple case."""
 
-        with_conflict = luigi.BoolParameter(default=False)
+        class TestTask(task.TagResultOutputMixin, luigi.Task):
 
-        def run(self):
-            if not self.tag_output:
-                assert self.output().path == str(tmpdir / "out" / "file.test")
-            elif not self.with_conflict:
-                assert re.match(
-                    f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
-                )
-            else:
-                assert re.match(
-                    f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test", self.output().path
-                )
+            with_conflict = luigi.BoolParameter(default=False)
 
-        def output(self):
-            return target.TaggedOutputLocalTarget("file.test")
+            def run(self):
+                if not self.tag_output:
+                    assert self.output().path == str(tmpdir / "out" / "file.test")
+                elif not self.with_conflict:
+                    assert re.match(
+                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
+                    )
+                else:
+                    assert re.match(
+                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                        self.output().path,
+                    )
 
-    root = tmpdir / "out"
-    assert luigi.build([TestTask(result_path=str(root))], local_scheduler=True)
+            def output(self):
+                return target.TaggedOutputLocalTarget("file.test")
 
-    # Test tag name conflicts
-    pause.until(int(time.time()) + 1.01)
-    assert luigi.build(
-        [TestTask(result_path=str(root), tag_output=True, with_conflict=False)],
-        local_scheduler=True,
-    )
-    assert luigi.build(
-        [TestTask(result_path=str(root), tag_output=True, with_conflict=True)],
-        local_scheduler=True,
-    )
+        root = tmpdir / "out"
+        assert luigi.build([TestTask(result_path=str(root))], local_scheduler=True)
+
+        # Test tag name conflicts
+        pause.until(int(time.time()) + 1.01)
+
+        t1 = TestTask(result_path=str(root), tag_output=True, with_conflict=False)
+        assert luigi.build([t1], local_scheduler=True)
+
+        t2 = TestTask(result_path=str(root), tag_output=True, with_conflict=True)
+        assert luigi.build([t2], local_scheduler=True)
+
+    def test_rerun_interaction(self, tmpdir):
+        """Test the data_validation_framework.task.TagResultOutputMixin class."""
+
+        class TestTask(luigi_tools.task.RerunMixin, task.TagResultOutputMixin, luigi.Task):
+
+            with_conflict = luigi.BoolParameter(default=False)
+
+            def run(self):
+                if not self.tag_output:
+                    assert self.output().path == str(tmpdir / "out" / "file.test")
+                elif not self.with_conflict:
+                    assert re.match(
+                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
+                    )
+                else:
+                    assert re.match(
+                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                        self.output().path,
+                    )
+
+            def output(self):
+                return target.TaggedOutputLocalTarget("file.test")
+
+        root = tmpdir / "out"
+
+        # Create tagged output directory
+        pause.until(int(time.time()) + 1.01)
+
+        # The t1 task also has conflict because its target prefix is updated before being run
+        t1 = TestTask(result_path=str(root), tag_output=True, with_conflict=True)
+        assert t1.output().path.endswith("s/file.test")
+
+        # Test warning is raised when TagResultOutputMixin is used with RerunMixin
+        with pytest.warns(
+            UserWarning,
+            match=(
+                "Using 'rerun' with conflicting tag output results in creating a new tag or "
+                r"removing the untagged result directory \(depending on the inheritance order\)."
+            ),
+        ):
+            t2 = TestTask(result_path=str(root), tag_output=True, with_conflict=True, rerun=True)
+
+        assert t2.output().path.endswith("s_1/file.test")
+
+        assert luigi.build([t1], local_scheduler=True)
+
+        # Test with rerun
+        assert luigi.build([t2], local_scheduler=True)
 
 
 class TestSetValidationTask:
@@ -81,9 +132,6 @@ class TestSetValidationTask:
 
     @pytest.fixture
     def TestTask(self, tmpdir):
-
-        target.TaggedOutputLocalTarget.set_default_prefix(tmpdir)
-
         class TestTask(task.SetValidationTask):
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
@@ -255,6 +303,24 @@ class TestSetValidationTask:
                 )
             )
         ]
+
+    def test_validation_function_as_method(self, dataset_df_path, tmpdir):
+        class TestTask(task.SetValidationTask):
+            # pylint: disable=no-self-argument
+            def validation_function(df, output_path, *args, **kwargs):
+                df["a"] *= 10
+                df[["a", "b"]].to_csv(output_path / "test.csv")
+
+        # Test defaults
+        assert luigi.build(
+            [TestTask(dataset_df=dataset_df_path, result_path=str(tmpdir / "out_defaults"))],
+            local_scheduler=True,
+        )
+
+        result = pd.read_csv(tmpdir / "out_defaults" / "TestTask" / "data" / "test.csv")
+        expected = pd.read_csv(tmpdir / "dataset.csv")
+        expected["a"] *= 10
+        assert result.equals(expected)
 
     class TestPropagation:
         @pytest.fixture
@@ -809,9 +875,6 @@ class TestElementValidationTask:
 
     @pytest.fixture
     def TestTask(self, tmpdir):
-
-        target.TaggedOutputLocalTarget.set_default_prefix(tmpdir)
-
         class TestTask(task.ElementValidationTask):
             @staticmethod
             # pylint: disable=arguments-differ
