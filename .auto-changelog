@@ -7,5 +7,6 @@
     "commitUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/commit/{id}",
     "issueUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/issues/{id}",
     "mergeUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/pull/{id}",
-    "compareUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/compare/{from}..{to}"
+    "compareUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/compare/{from}...{to}",
+    "tagPrefix": "data-validation-framework-v"
 }
