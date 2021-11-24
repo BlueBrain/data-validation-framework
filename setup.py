@@ -1,12 +1,8 @@
 """Setup for the data-validation-framework package."""
 import imp
-import sys
 
 from setuptools import find_packages
 from setuptools import setup
-
-if sys.version_info < (3, 6):
-    sys.exit("Sorry, Python < 3.6 is not supported")
 
 # Read the contents of the README file
 with open("README.md", encoding="utf-8") as f:
@@ -49,7 +45,7 @@ setup(
     },
     license="BBP-internal-confidential",
     packages=find_packages(exclude=["tests"]),
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
@@ -58,8 +54,6 @@ setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
