@@ -110,7 +110,11 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     """
 
     # I/O Parameters
-    dataset_df = OptionalStrParameter(default=None, description=":str: Path to the input dataset.")
+    dataset_df = OptionalPathParameter(
+        description=":str: Path to the input dataset.",
+        default=None,
+        exists=True,
+    )
     input_index_col = OptionalStrParameter(
         default=None, description=":str: Name of the column used as index."
     )
