@@ -8,3 +8,4 @@
    Home <self>
    api
    changelog
+   contributing
