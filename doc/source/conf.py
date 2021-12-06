@@ -1,5 +1,5 @@
 """Configuration file for the Sphinx documentation builder."""
-#
+
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -16,7 +16,7 @@ from pkg_resources import get_distribution
 project = "data-validation-framework"
 
 # The short X.Y version
-version = get_distribution("data-validation-framework").version
+version = get_distribution(project).version
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -57,7 +57,7 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "data-validation-framework",
+    "metadata_distribution": project,
 }
 
 html_title = "Data Validation Framework"

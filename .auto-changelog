@@ -4,9 +4,8 @@
     "commitLimit": false,
     "backfillLimit": false,
     "ignoreCommitPattern": "Release [0-9]+\\.[0-9]+\\.[0-9]+|Update CHANGELOG.*|.*\\[skip-changelog\\].*",
-    "commitUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/commit/{id}",
-    "issueUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/issues/{id}",
-    "mergeUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/pull/{id}",
-    "compareUrl": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework/compare/{from}...{to}",
-    "tagPrefix": "data-validation-framework-v"
+    "commitUrl": "https://github.com/BlueBrain/data-validation-framework/commit/{id}",
+    "issueUrl": "https://github.com/BlueBrain/data-validation-framework/issues/{id}",
+    "mergeUrl": "https://github.com/BlueBrain/data-validation-framework/pull/{id}",
+    "compareUrl": "https://github.com/BlueBrain/data-validation-framework/compare/{from}..{to}"
 }

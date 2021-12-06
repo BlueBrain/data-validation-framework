@@ -63,7 +63,7 @@ def build_report_conf(dest, **kwargs):
 
     config.update(kwargs)
 
-    with open(dest, "w") as config_file:
+    with open(dest, "w", encoding="utf-8") as config_file:
         config_file.writelines(["null = None\n"])
         config_file.writelines([f"{i[0]} = {json.dumps(i[1])} \n" for i in config.items()])
 

@@ -2,6 +2,7 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=redefined-outer-name
+# pylint: disable=use-implicit-booleaness-not-comparison
 import pytest
 
 from data_validation_framework import rst_tools
@@ -226,7 +227,7 @@ def test_write(empty_RstFile):
     empty_RstFile.add("Some text")
     empty_RstFile.write()
 
-    with open(empty_RstFile.file_path) as res_file:
+    with open(empty_RstFile.file_path, encoding="utf-8") as res_file:
         res = res_file.read()
 
     assert res == ("=========\n" "The title\n" "=========\n" "\n" "\n" "Some text\n")

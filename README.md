@@ -1,3 +1,10 @@
+[![Version](https://img.shields.io/pypi/v/data-validation-framework)](https://github.com/BlueBrain/data-validation-framework/releases)
+[![Build status](https://github.com/BlueBrain/data-validation-framework/actions/workflows/run-tox.yml/badge.svg?branch=main)](https://github.com/BlueBrain/data-validation-framework/actions)
+[![Coverage](https://codecov.io/github/BlueBrain/data-validation-framework/coverage.svg?branch=main)](https://codecov.io/github/BlueBrain/data-validation-framework?branch=main)
+[![License](https://img.shields.io/badge/License-Apache%202-blue)](https://github.com/BlueBrain/data-validation-framework/blob/main/LICENSE.txt)
+[![Documentation status](https://readthedocs.org/projects/data-validation-framework/badge/?version=latest)](https://data-validation-framework.readthedocs.io/)
+
+
 # Data Validation Framework
 
 This project provides simple tools to create data validation workflows.
