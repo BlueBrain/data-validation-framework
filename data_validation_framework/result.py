@@ -28,7 +28,7 @@ class ValidationResult(dict):
     """
 
     def __init__(self, is_valid, ret_code=None, comment=None, exception=None, **kwargs):
-        """"""
+        """ """
         if ret_code is None:
             if is_valid:
                 ret_code = 0

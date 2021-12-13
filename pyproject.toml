@@ -1,3 +1,11 @@
+# SETUPTOOLS
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools_scm[toml]",
+    "wheel",
+]
+
 # BLACK
 [tool.black]
 line-length = 100
@@ -36,6 +44,8 @@ max-attributes = 40
 min-public-methods = 0
 # Maximum number of public methods for a class (see R0904).
 max-public-methods = 60
+# Ignore some classes
+ignored-classes = "TextFileReader"
 
 # PYDOCSTYLE
 [tool.pydocstyle]

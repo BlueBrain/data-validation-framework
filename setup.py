@@ -1,6 +1,4 @@
 """Setup for the data-validation-framework package."""
-import imp
-
 from setuptools import find_packages
 from setuptools import setup
 
@@ -18,6 +16,7 @@ reqs = [
 ]
 doc_reqs = [
     "m2r2",
+    "mistune<2",
     "sphinx-bluebrain-theme",
 ]
 test_reqs = [
@@ -28,33 +27,39 @@ test_reqs = [
     "pytest-html",
 ]
 
-VERSION = imp.load_source("", "data_validation_framework/version.py").VERSION
-
 setup(
     name="data-validation-framework",
-    author="bbp-ou-cells",
-    author_email="bbp-ou-cells@groupes.epfl.ch",
-    version=VERSION,
+    author="Blue Brain Project, EPFL",
     description="Simple framework to create data validation workflows.",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://bbpteam.epfl.ch/documentation/projects/data-validation-framework",
     project_urls={
-        "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/CELLS/issues",
-        "Source": "https://bbpgitlab.epfl.ch/neuromath/data-validation-framework",
+        "Tracker": "https://github.com/BlueBrain/data-validation-framework/issues",
+        "Source": "https://github.com/BlueBrain/data-validation-framework",
     },
-    license="BBP-internal-confidential",
-    packages=find_packages(exclude=["tests"]),
+    license="Apache-2.0",
+    packages=find_packages(include=["data_validation_framework"]),
     python_requires=">=3.8",
+    use_scm_version=True,
+    setup_requires=[
+        "setuptools_scm",
+    ],
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
         "test": test_reqs,
     },
     classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Topic :: Software Development :: Libraries :: Application Frameworks",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 )

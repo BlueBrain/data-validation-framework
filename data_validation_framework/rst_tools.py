@@ -31,7 +31,7 @@ class RstFile:
 
     def write(self):
         """Write the internal buffer into the given file."""
-        with open(self.file_path, self.mode) as f:
+        with open(self.file_path, self.mode, encoding="utf-8") as f:
             f.write("\n".join(self._data))
             f.write("\n")
 
@@ -46,22 +46,22 @@ class RstFile:
     @staticmethod
     def bold(string):
         """Bold the given string."""
-        return "**{0}**".format(string)
+        return f"**{string}**"
 
     @staticmethod
     def emph(string):
         """Emph the given string."""
-        return "*{0}*".format(string)
+        return f"*{string}*"
 
     @staticmethod
     def pre(string):
         """Pre the given string."""
-        return "``{0}``".format(string)
+        return f"``{string}``"
 
     @staticmethod
     def inline_link(text, link):
         """Create a link from the given string and URL."""
-        return "`{0} <{1}>`_".format(text, link)
+        return f"`{text} <{link}>`_"
 
     @staticmethod
     def _indent(content, indent=0):

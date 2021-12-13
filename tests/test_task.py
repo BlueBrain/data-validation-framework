@@ -334,7 +334,7 @@ class TestSetValidationTask:
 
                 @staticmethod
                 def validation_function(df, output_path, *args, **kwargs):
-                    with open(output_path / "test.json", "w") as f:
+                    with open(output_path / "test.json", "w", encoding="utf-8") as f:
                         json.dump(kwargs, f)
 
                     TestTask.validation_function(df, output_path, *args, **kwargs)
@@ -373,7 +373,10 @@ class TestSetValidationTask:
                 local_scheduler=True,
             )
 
-            with open(tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.json") as f:
+            with open(
+                tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.json",
+                encoding="utf-8",
+            ) as f:
                 params = json.load(f)
 
             assert params == {
@@ -417,7 +420,10 @@ class TestSetValidationTask:
                     local_scheduler=True,
                 )
 
-            with open(tmpdir / "specific_out_path" / "BaseTestTask" / "data" / "test.json") as f:
+            with open(
+                tmpdir / "specific_out_path" / "BaseTestTask" / "data" / "test.json",
+                encoding="utf-8",
+            ) as f:
                 params = json.load(f)
 
             assert params == {
@@ -696,7 +702,7 @@ class TestSetValidationTask:
         class TestTaskA(luigi.Task):
             def run(self):
                 assert self.output().path == str(tmpdir / "file.test")
-                with open(self.output().path, "w") as f:
+                with open(self.output().path, "w", encoding="utf-8") as f:
                     f.write("result of TestTaskA")
 
             def output(self):
@@ -716,7 +722,7 @@ class TestSetValidationTask:
             def validation_function(df, output_path, *args, **kwargs):
                 df["is_valid"] = True
                 df["extra_path"] = kwargs["extra_task_target"]
-                with open(kwargs["extra_task_target"]) as f:
+                with open(kwargs["extra_task_target"], encoding="utf-8") as f:
                     df["extra_result"] = f.read()
 
         assert luigi.build(
@@ -1017,7 +1023,7 @@ class TestValidationWorkflow:
             "('TestTask', 'comment')",
             "('TestTask', 'exception')",
         ]
-        assert result[
+        assert result[  # pylint: disable=unsubscriptable-object
             [
                 "__index_label__",
                 "is_valid",
