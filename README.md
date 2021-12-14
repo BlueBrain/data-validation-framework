@@ -8,7 +8,7 @@
 # Data Validation Framework
 
 This project provides simple tools to create data validation workflows.
-The workflows are based on the `luigi <https://luigi.readthedocs.io/en/stable>`_ library.
+The workflows are based on the [luigi](https://luigi.readthedocs.io/en/stable) library.
 
 The main objective of this framework is to gather in a same place both the specifications that the
 data must follow and the code that actually tests the data. This avoids having multiple documents
