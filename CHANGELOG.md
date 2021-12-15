@@ -1,8 +1,14 @@
 # Changelog
 
+## [0.1.1](https://github.com/BlueBrain/data-validation-framework/compare/0.1.0..0.1.1)
+
+> 15 December 2021
+
+- Fix typos in README [#4](https://github.com/BlueBrain/data-validation-framework/pull/4)
+
 ## [0.1.0](https://github.com/BlueBrain/data-validation-framework/compare/0.0.9..0.1.0)
 
-> 14 December 2021
+> 15 December 2021
 
 - Link fixed in README.md [#2](https://github.com/BlueBrain/data-validation-framework/pull/2)
 - Change license and open the sources [#1](https://github.com/BlueBrain/data-validation-framework/pull/1)
