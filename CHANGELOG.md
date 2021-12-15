@@ -2,9 +2,10 @@
 
 ## [0.1.0](https://github.com/BlueBrain/data-validation-framework/compare/0.0.9..0.1.0)
 
-> 13 December 2021
+> 14 December 2021
 
-- Change license and open the sources (Adrien Berchet - [46fceca](https://github.com/BlueBrain/data-validation-framework/commit/46fceca6df8ae24594975ea8e500a153e12fdd94))
+- Link fixed in README.md [#2](https://github.com/BlueBrain/data-validation-framework/pull/2)
+- Change license and open the sources [#1](https://github.com/BlueBrain/data-validation-framework/pull/1)
 - Add contribution doc (Adrien Berchet - [ebfe669](https://github.com/BlueBrain/data-validation-framework/commit/ebfe6698ae270e0873ddde8d1e0157a02cc50f2e))
 - Drop support of Python 3.6 and 3.7 (Adrien Berchet - [5bef8b0](https://github.com/BlueBrain/data-validation-framework/commit/5bef8b00cacb4e1c4210e8444fde3ef5ea95b7be))
 - Fix auto-changelog (Adrien Berchet - [5529558](https://github.com/BlueBrain/data-validation-framework/commit/55295589e374b9ef76730905704593c4ffefe68b))
