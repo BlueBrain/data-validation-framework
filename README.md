@@ -35,7 +35,7 @@ import data_validation_framework as dvf
 
 
 class ValidationTask1(dvf.task.ElementValidationTask):
-    """Use the class dosctring to describe the specifications of the ValidationTask1."""
+    """Use the class docstring to describe the specifications of the ValidationTask1."""
 
     output_columns = {"col_name": None}
 
@@ -53,7 +53,7 @@ class ValidationTask1(dvf.task.ElementValidationTask):
 
 
 def external_validation_function(df, output_path, *args, **kwargs):
-    # Update the dataset inplace here by seting values to the 'is_valid' column.
+    # Update the dataset inplace here by setting values to the 'is_valid' column.
     # The 'ret_code' and 'comment' values are optional, they will be added to the report
     # in order to help the user to understand why the dataset did not pass the validation.
 
