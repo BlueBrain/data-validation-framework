@@ -25,3 +25,11 @@ jobs:
     - name: Run tox
       run: |
         tox
+    - name: Upload to codecov
+      if: ${{matrix.python-version == '3.8'}}
+      uses: codecov/codecov-action@v1
+      with:
+        fail_ci_if_error: false
+        files: ./reports/coverage-py38.xml
+        flags: pytest
+        name: "data-validation-framework-py38"
