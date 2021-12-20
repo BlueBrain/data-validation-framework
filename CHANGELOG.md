@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/BlueBrain/data-validation-framework/compare/0.1.1..1.2.0)
+
+> 20 December 2021
+
+- Add a mixin to make the task skippable [#7](https://github.com/BlueBrain/data-validation-framework/pull/7)
+- Setup Codecov [#6](https://github.com/BlueBrain/data-validation-framework/pull/6)
+
 ## [0.1.1](https://github.com/BlueBrain/data-validation-framework/compare/0.1.0..0.1.1)
 
 > 15 December 2021
