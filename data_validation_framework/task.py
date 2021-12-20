@@ -4,6 +4,7 @@ import sys
 import time
 import traceback
 import warnings
+from functools import partial
 from pathlib import Path
 
 import luigi
@@ -21,6 +22,7 @@ from luigi_tools.task import RerunMixin
 from numpy import VisibleDeprecationWarning
 
 from data_validation_framework.report import make_report
+from data_validation_framework.result import ValidationResult
 from data_validation_framework.result import ValidationResultSet
 from data_validation_framework.target import ReportTarget
 from data_validation_framework.target import TaggedOutputLocalTarget
@@ -28,6 +30,7 @@ from data_validation_framework.util import apply_to_df
 
 L = logging.getLogger(__name__)
 INDEX_LABEL = "__index_label__"
+SKIP_COMMENT = "Skipped by user."
 
 
 class ValidationError(Exception):
@@ -660,3 +663,63 @@ class ValidationWorkflow(SetValidationTask):
         This method should usually do nothing for :class:`ValidationWorkflow` as this class is only
         supposed to gather validation steps.
         """
+
+
+def _skippable_element_validation_function(validation_function, skip, *args, **kwargs):
+    """Skipping wrapper for an element validation function."""
+    if skip:
+        return ValidationResult(is_valid=True, comment=SKIP_COMMENT)
+    return validation_function(*args, **kwargs)
+
+
+def _skippable_set_validation_function(validation_function, skip, *args, **kwargs):
+    """Skipping wrapper for a set validation function."""
+    df = kwargs.get("df", args[0])
+    if skip:
+        df.loc[df["is_valid"], "comment"] = SKIP_COMMENT
+    else:
+        validation_function(*args, **kwargs)
+
+
+def SkippableMixin(default_value=False):
+    """Create a mixin class to add a ``skip`` parameter.
+
+    This mixin must be applied to a :class:`data_validation_framework.ElementValidationTask`.
+    It will create a ``skip`` parameter and wrap the validation function to just skip it if the
+    ``skip`` argument is set to ``True``. If skipped, it will keep the ``is_valid`` values as is and
+    add a specific comment to inform the user.
+
+    Args:
+        default_value (bool): The default value for the ``skip`` argument.
+    """
+
+    class Mixin:
+        """A mixin to add a ``skip`` parameter to a :class:`luigi.task`."""
+
+        skip = BoolParameter(default=default_value, description=":bool: Skip the task")
+
+        def __init__(self, *args, **kwargs):
+
+            super().__init__(*args, **kwargs)
+
+            if isinstance(self, ElementValidationTask):
+                new_validation_function = partial(
+                    _skippable_element_validation_function,
+                    self.validation_function,
+                    self.skip,
+                )
+            elif isinstance(self, SetValidationTask) and not isinstance(self, ValidationWorkflow):
+                new_validation_function = partial(
+                    _skippable_set_validation_function,
+                    self.validation_function,
+                    self.skip,
+                )
+            else:
+                raise TypeError(
+                    "The SkippableMixin can only be associated with childs of ElementValidationTask"
+                    " or SetValidationTask"
+                )
+            self._skippable_validation_function = self.validation_function
+            self.validation_function = new_validation_function
+
+    return Mixin

@@ -1568,3 +1568,157 @@ class TestValidationWorkflow:
                 data_dir / "test_report_before_run" / "report_rst2pdf_nested.pdf",
                 threshold=25,
             )
+
+
+class TestSkippableMixin:
+    """Test the data_validation_framework.task.SkippableMixin class."""
+
+    def test_fail_parent_type(self):
+        err_msg = (
+            "The SkippableMixin can only be associated with childs of ElementValidationTask"
+            " or SetValidationTask"
+        )
+
+        class TestTask1(task.SkippableMixin(), luigi.Task):
+            pass
+
+        with pytest.raises(
+            TypeError,
+            match=err_msg,
+        ):
+            TestTask1()
+
+        class TestTask2(task.SkippableMixin(), task.ValidationWorkflow):
+            pass
+
+        with pytest.raises(
+            TypeError,
+            match=err_msg,
+        ):
+            TestTask2()
+
+    def test_skip_element_task(self, dataset_df_path, tmpdir):
+        class TestSkippableTask(task.SkippableMixin(), task.ElementValidationTask):
+            @staticmethod
+            # pylint: disable=arguments-differ
+            def validation_function(row, output_path, *args, **kwargs):
+                if row["a"] <= 1:
+                    return result.ValidationResult(is_valid=True)
+                if row["a"] <= 2:
+                    return result.ValidationResult(is_valid=False, comment="bad value")
+                raise ValueError(f"Incorrect value {row['a']}")
+
+        # Test with no given skip value (should be False by default)
+        assert luigi.build(
+            [
+                TestSkippableTask(
+                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_default")
+                )
+            ],
+            local_scheduler=True,
+        )
+
+        report_data = pd.read_csv(tmpdir / "out_default" / "TestSkippableTask" / "report.csv")
+        assert (report_data["is_valid"] == [True, False]).all()
+        assert (report_data["comment"].isnull() == [True, False]).all()
+        assert report_data.loc[1, "comment"] == "bad value"
+        assert report_data["exception"].isnull().all()
+
+        # Test with no given skip value (should be False by default)
+        assert luigi.build(
+            [
+                TestSkippableTask(
+                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_no_skip"), skip=False
+                )
+            ],
+            local_scheduler=True,
+        )
+
+        report_data = pd.read_csv(tmpdir / "out_no_skip" / "TestSkippableTask" / "report.csv")
+        assert (report_data["is_valid"] == [True, False]).all()
+        assert (report_data["comment"].isnull() == [True, False]).all()
+        assert report_data.loc[1, "comment"] == "bad value"
+        assert report_data["exception"].isnull().all()
+
+        # Test with no given skip value (should be False by default)
+        assert luigi.build(
+            [
+                TestSkippableTask(
+                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_skip"), skip=True
+                )
+            ],
+            local_scheduler=True,
+        )
+
+        report_data = pd.read_csv(tmpdir / "out_skip" / "TestSkippableTask" / "report.csv")
+        assert (
+            report_data["is_valid"] == True  # noqa ; pylint: disable=singleton-comparison
+        ).all()
+        assert (report_data["comment"] == "Skipped by user.").all()
+        assert report_data["exception"].isnull().all()
+
+    def test_skip_set_task(self, dataset_df_path, tmpdir):
+        class TestSkippableTask(task.SkippableMixin(), task.SetValidationTask):
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                # pylint: disable=no-member
+                df["a"] *= 10
+                df.loc[1, "is_valid"] = False
+                df.loc[1, "ret_code"] = 1
+                df[["a", "b"]].to_csv(output_path / "test.csv")
+
+        # Test with no given skip value (should be False by default)
+        assert luigi.build(
+            [
+                TestSkippableTask(
+                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_default")
+                )
+            ],
+            local_scheduler=True,
+        )
+
+        res = pd.read_csv(tmpdir / "out_default" / "TestSkippableTask" / "data" / "test.csv")
+        expected = pd.read_csv(tmpdir / "dataset.csv")
+        expected["a"] *= 10
+        assert res.equals(expected)
+        report_data = pd.read_csv(tmpdir / "out_default" / "TestSkippableTask" / "report.csv")
+        assert (report_data["is_valid"] == [True, False]).all()
+        assert report_data["comment"].isnull().all()
+        assert report_data["exception"].isnull().all()
+
+        # Test with skip = False
+        assert luigi.build(
+            [
+                TestSkippableTask(
+                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_no_skip"), skip=False
+                )
+            ],
+            local_scheduler=True,
+        )
+
+        res = pd.read_csv(tmpdir / "out_no_skip" / "TestSkippableTask" / "data" / "test.csv")
+        expected = pd.read_csv(tmpdir / "dataset.csv")
+        expected["a"] *= 10
+        assert res.equals(expected)
+        report_data = pd.read_csv(tmpdir / "out_no_skip" / "TestSkippableTask" / "report.csv")
+        assert (report_data["is_valid"] == [True, False]).all()
+        assert report_data["comment"].isnull().all()
+        assert report_data["exception"].isnull().all()
+
+        # Test with skip = True
+        assert luigi.build(
+            [
+                TestSkippableTask(
+                    dataset_df=dataset_df_path, result_path=str(tmpdir / "out_skip"), skip=True
+                )
+            ],
+            local_scheduler=True,
+        )
+
+        assert not (tmpdir / "out_skip" / "TestSkippableTask" / "data" / "test.csv").exists()
+        report_data = pd.read_csv(tmpdir / "out_skip" / "TestSkippableTask" / "report.csv")
+        assert (
+            report_data["is_valid"] == True  # noqa ; pylint: disable=singleton-comparison
+        ).all()
+        assert (report_data["comment"] == "Skipped by user.").all()
+        assert report_data["exception"].isnull().all()
