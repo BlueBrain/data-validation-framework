@@ -87,7 +87,34 @@ class TagResultOutputMixin:
 
 
 class InputParameters:
-    """A helper to build task inputs."""
+    """A helper to build task inputs.
+
+    This class should only be used to build the input dictionaries:
+
+    .. code-block:: python
+
+        class Task(ChildBaseValidationTask):
+            data_dir = luigi.Parameter(default='my_data')
+            validation_function = staticmethod(my_validation_function)
+            output_columns = {'my_new_col': None}
+
+            def inputs(self):
+                return {
+                    PreviousTask: InputParameters(
+                        {"input_data", "input_data"},
+                        kwarg_1="value_1",
+                        kwarg_2="value_2"
+                    )
+                }
+
+    Args:
+        col_mapping (dict): The column mapping.
+
+    Keyword Args:
+        kwargs: All the keyword arguments passed to the constructor.
+
+    .. warning:: The keyword arguments will always override the arguments from the config file.
+    """
 
     def __init__(self, col_mapping, **kwargs):
         self.col_mapping = col_mapping
@@ -111,7 +138,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
             output_columns = {'my_new_col': None}
 
             def inputs(self):
-                return {'PreviousTask(): {"input_data", "input_data"}
+                return {PreviousTask: {"input_data", "input_data"}
 
     .. note::
 
@@ -203,17 +230,41 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def inputs(self):
         """Information about required input data.
 
-        This method can be overridden and should return a dict of the following form:
+        This method can be overridden and should return a dict of one of the following forms:
 
         .. code-block:: python
 
-            {<task_name>(): {"<input_column_name>": "<current_column_name>"}}
+            {<task_name>: {"<input_column_name>": "<current_column_name>"}}
+
+        .. code-block:: python
+
+            {
+                <task_name>: (
+                    {"<input_column_name>": "<current_column_name>"},
+                    {
+                        "<kwarg_1>": "<value_1>",
+                        "<kwarg_2>": "<value_2>",
+                    }
+                )
+            }
+
+        .. code-block:: python
+
+            {
+                <task_name>: InputParameters(
+                    {"<input_column_name>": "<current_column_name>"},
+                    kwarg_1="<value_1>",
+                    kwarg_2="<value_2>",
+                )
+            }
 
         where:
             - ``<task_name>`` is the name of the required task,
             - ``<input_column_name>`` is the name of the column we need from the report of
               task_name,
             - ``<current_column_name>`` is the name of the same column in the current task.
+            - ``<kwarg_*>`` is the name of a keyword argument passed to the constructor of the
+              required task.
         """
         # pylint: disable=no-self-use
         return None

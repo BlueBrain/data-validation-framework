@@ -77,7 +77,7 @@ class ValidationTask2(dvf.task.SetValidationTask):
     ValidationTask2."""
 
     def inputs(self):
-        return {ValidationTask1(): {"col_name": "new_col_name_in_current_task"}}
+        return {ValidationTask1: {"col_name": "new_col_name_in_current_task"}}
 
     def kwargs(self):
         return {"param_value": self.a_parameter}
@@ -90,8 +90,8 @@ class ValidationWorkflow(dvf.task.ValidationWorkflow):
 
     def inputs(self):
         return {
-            ValidationTask1(): {},
-            ValidationTask2(): {},
+            ValidationTask1: {},
+            ValidationTask2: {},
         }
 ```
 
