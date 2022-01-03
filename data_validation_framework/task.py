@@ -86,6 +86,14 @@ class TagResultOutputMixin:
             TaggedOutputLocalTarget.set_default_prefix(self.result_path)
 
 
+class InputParameters:
+    """A helper to build task inputs."""
+
+    def __init__(self, col_mapping, **kwargs):
+        self.col_mapping = col_mapping
+        self.kwargs = kwargs
+
+
 class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi.Task):
     """Base luigi task used for validation steps.
 
@@ -243,22 +251,52 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def post_process(self, df, args, kwargs):
         """Method executed after applying the external function."""
 
+    def processed_inputs(self):
+        """Process the inputs to automatically propagate the values from the workflow."""
+        inputs = self.inputs()  # pylint: disable=assignment-from-none
+
+        if not inputs:
+            return None
+
+        def default_kwargs(self):
+            return {
+                "dataset_df": self.dataset_df,
+                "input_index_col": self.input_index_col,
+                "result_path": self.result_path,
+                "nb_processes": self.nb_processes,
+                "redirect_stdout": self.redirect_stdout,
+            }
+
+        formatted_inputs = {}
+        for task, v in inputs.items():
+            if isinstance(v, dict):
+                col_mapping = v
+                specific_kwargs = {}
+            elif isinstance(v, InputParameters):
+                col_mapping = v.col_mapping
+                specific_kwargs = v.kwargs
+            else:
+                try:
+                    specific_kwargs, col_mapping = v
+                except ValueError as exc:
+                    raise ValueError(
+                        "The input values should either be a dict containing the column mapping "
+                        "or a tuple with a dict containing the keyword arguments as first element "
+                        "and a dict containing the column mapping as second element."
+                    ) from exc
+            kwargs = default_kwargs(self)
+            base_kwargs = {
+                key: value
+                for key, value in task.get_param_values(task.get_params(), [], specific_kwargs)
+                if value is not None
+            }
+            kwargs.update(base_kwargs)
+            formatted_inputs[task(**kwargs)] = col_mapping
+        return formatted_inputs
+
     def requires(self):
         """Process the inputs to generate the requirements."""
-        if self.inputs():
-            requires = list(self.inputs().keys())  # pylint: disable=not-callable
-            for req in requires:
-                if req.dataset_df is None:
-                    req.dataset_df = self.dataset_df
-                    req.input_index_col = self.input_index_col
-                if req.result_path is None:
-                    req.result_path = self.result_path
-                if req.nb_processes is None:
-                    req.nb_processes = self.nb_processes
-                if req.redirect_stdout is None:
-                    req.redirect_stdout = self.redirect_stdout
-        else:
-            requires = []
+        requires = list(self.processed_inputs() or [])
         return requires + task_flatten(self.extra_requires())
 
     def extra_requires(self):
@@ -364,9 +402,11 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
 
     def _join_inputs(self, new_df):
         """Get the inputs and join them to the dataset."""
-        if self.inputs():
+        if self.processed_inputs():
             # Check inputs
-            with_mapping = self.check_inputs(self.inputs())  # pylint: disable=not-callable
+            with_mapping = self.check_inputs(
+                self.processed_inputs()
+            )  # pylint: disable=not-callable
 
             # Get the input targets and their DataFrames
             all_inputs = {
@@ -375,7 +415,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                     for target in task_flatten(i.output())
                     if isinstance(target, ReportTarget)
                 ]
-                for i in task_flatten(self.inputs().keys())
+                for i in task_flatten(self.processed_inputs().keys())
             }
             all_report_paths = {
                 t: [r.path for r in reports][0] for t, reports in all_inputs.items()
@@ -396,7 +436,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
             # Filter columns in the DataFrames
             if with_mapping:
                 # pylint: disable=not-callable
-                filtered_dfs = self.filter_columns(all_dfs, self.inputs())
+                filtered_dfs = self.filter_columns(all_dfs, self.processed_inputs())
 
                 # Concatenate all DataFrames
                 filtered_df = pd.concat(filtered_dfs, axis=1)
@@ -443,7 +483,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def run(self):
         """The main process of the current task."""
         # Import the DataFrame(s)
-        if self.dataset_df is None and self.inputs() is None:
+        if self.dataset_df is None and self.processed_inputs() is None:
             raise ValueError("Either the 'dataset_df' parameter or a requirement must be provided.")
 
         new_df = self._get_dataset()
