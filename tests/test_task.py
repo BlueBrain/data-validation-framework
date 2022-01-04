@@ -201,9 +201,13 @@ class TestSetValidationTask:
         class TestTaskWithInputs(task.SetValidationTask):
             def inputs(self):
                 return {
-                    TestTaskWithOutputs(dataset_df=dataset_df_path, result_path=self.result_path): {
-                        "a": "a_input"
-                    }
+                    TestTaskWithOutputs: (
+                        {
+                            "dataset_df": dataset_df_path,
+                            "result_path": self.result_path,
+                        },
+                        {"a": "a_input"},
+                    )
                 }
 
             def kwargs(self):
@@ -256,7 +260,7 @@ class TestSetValidationTask:
 
         class TestTaskMissingColumns(task.SetValidationTask):
             def inputs(self):
-                return {TestTask(): {"a": "a_input"}}
+                return {TestTask: {"a": "a_input"}}
 
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
@@ -298,11 +302,39 @@ class TestSetValidationTask:
                 KeyError(
                     "The columns ['a'] are missing from the output columns of "
                     "TestTask("
-                    "tag_output=False, result_path=, dataset_df=, input_index_col=, data_dir=data"
-                    ").",
+                    f"tag_output=False, result_path={tmpdir / 'out_missing_columns'}, "
+                    f"dataset_df={dataset_df_path}, input_index_col=, data_dir=data).",
                 )
             )
         ]
+
+    def test_wrong_inputs(self, TestTask, dataset_df_path, tmpdir):
+        # Test bad format in inputs
+
+        class TestTaskMissingColumns(task.SetValidationTask):
+            def inputs(self):
+                return {TestTask: "BAD INPUTS"}
+
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                pass
+
+        with pytest.raises(
+            ValueError,
+            match=(
+                "The input values should either be a dict containing the column mapping or a tuple "
+                "with a dict containing the keyword arguments as first element and a dict "
+                r"containing the column mapping as second element\."
+            ),
+        ):
+            luigi.build(
+                [
+                    TestTaskMissingColumns(
+                        dataset_df=dataset_df_path, result_path=str(tmpdir / "out_bad_inputs")
+                    )
+                ],
+                local_scheduler=True,
+            )
 
     def test_validation_function_as_method(self, dataset_df_path, tmpdir):
         class TestTask(task.SetValidationTask):
@@ -345,7 +377,7 @@ class TestSetValidationTask:
         def TestTaskPassDatasetAndResultPath(self, BaseTestTask):
             class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
                 def inputs(self):
-                    return {BaseTestTask(): {}}
+                    return {BaseTestTask: {}}
 
                 @staticmethod
                 def validation_function(df, output_path, *args, **kwargs):
@@ -360,6 +392,81 @@ class TestSetValidationTask:
 
             return TestTaskPassDatasetAndResultPath
 
+        @pytest.fixture
+        def TestTaskPassDatasetAndResultPathWithKwargs(self, BaseTestTask):
+            class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
+                def inputs(self):
+                    return {BaseTestTask: ({"result_path": str(self.result_path / "sub_path")}, {})}
+
+                @staticmethod
+                def validation_function(df, output_path, *args, **kwargs):
+                    assert df["is_valid"].all()
+                    assert (df["ret_code"] == 0).all()
+                    assert df["comment"].isnull().all()
+                    assert df["exception"].isnull().all()
+                    assert df["a"].tolist() == [1, 2]
+
+                    df["a"] *= 100
+                    df.to_csv(output_path / "test.csv")
+
+            return TestTaskPassDatasetAndResultPath
+
+        @pytest.fixture
+        def TestTaskPassDatasetAndResultPathWithInputParameters(self, BaseTestTask):
+            class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
+                def inputs(self):
+                    return {
+                        BaseTestTask: task.InputParameters(
+                            {}, result_path=str(self.result_path / "sub_path")
+                        )
+                    }
+
+                @staticmethod
+                def validation_function(df, output_path, *args, **kwargs):
+                    assert df["is_valid"].all()
+                    assert (df["ret_code"] == 0).all()
+                    assert df["comment"].isnull().all()
+                    assert df["exception"].isnull().all()
+                    assert df["a"].tolist() == [1, 2]
+
+                    df["a"] *= 100
+                    df.to_csv(output_path / "test.csv")
+
+            return TestTaskPassDatasetAndResultPath
+
+        @staticmethod
+        def _check_results(tmpdir, workflow_result_subpath, base_result_subpath=None):
+
+            if base_result_subpath is None:
+                base_result_subpath = workflow_result_subpath
+
+            with open(
+                tmpdir / base_result_subpath / "BaseTestTask" / "data" / "test.json",
+                encoding="utf-8",
+            ) as f:
+                params = json.load(f)
+
+            assert params == {
+                "dataset_df": f"{tmpdir}/dataset.csv",
+                "result_path": f"{tmpdir}/{base_result_subpath}",
+            }
+
+            result_1 = pd.read_csv(
+                tmpdir / base_result_subpath / "BaseTestTask" / "data" / "test.csv"
+            )
+            result_2 = pd.read_csv(
+                tmpdir
+                / workflow_result_subpath
+                / "TestTaskPassDatasetAndResultPath"
+                / "data"
+                / "test.csv"
+            )
+            expected = pd.read_csv(tmpdir / "dataset.csv")
+            expected["a"] *= 10
+            assert result_1.equals(expected)
+            expected["a"] *= 10
+            assert result_2[["a", "b"]].equals(expected[["a", "b"]])
+
         def test_dataset_propagation(
             self, TestTaskPassDatasetAndResultPath, dataset_df_path, tmpdir
         ):
@@ -373,32 +480,7 @@ class TestSetValidationTask:
                 local_scheduler=True,
             )
 
-            with open(
-                tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.json",
-                encoding="utf-8",
-            ) as f:
-                params = json.load(f)
-
-            assert params == {
-                "dataset_df": f"{tmpdir}/dataset.csv",
-                "result_path": f"{tmpdir}/out_pass_dataset",
-            }
-
-            result_1 = pd.read_csv(
-                tmpdir / "out_pass_dataset" / "BaseTestTask" / "data" / "test.csv"
-            )
-            result_2 = pd.read_csv(
-                tmpdir
-                / "out_pass_dataset"
-                / "TestTaskPassDatasetAndResultPath"
-                / "data"
-                / "test.csv"
-            )
-            expected = pd.read_csv(tmpdir / "dataset.csv")
-            expected["a"] *= 10
-            assert result_1.equals(expected)
-            expected["a"] *= 10
-            assert result_2[["a", "b"]].equals(expected[["a", "b"]])
+            self._check_results(tmpdir, "out_pass_dataset", "out_pass_dataset")
 
         def test_dataset_propagation_with_config(
             self, TestTaskPassDatasetAndResultPath, dataset_df_path, tmpdir
@@ -420,32 +502,83 @@ class TestSetValidationTask:
                     local_scheduler=True,
                 )
 
-            with open(
-                tmpdir / "specific_out_path" / "BaseTestTask" / "data" / "test.json",
-                encoding="utf-8",
-            ) as f:
-                params = json.load(f)
+            self._check_results(tmpdir, "out_pass_dataset", "specific_out_path")
 
-            assert params == {
-                "dataset_df": f"{tmpdir}/dataset.csv",
-                "result_path": f"{tmpdir}/specific_out_path",
-            }
+        def test_dataset_propagation_with_kwargs(
+            self, TestTaskPassDatasetAndResultPathWithKwargs, dataset_df_path, tmpdir
+        ):
+            # Test that the dataset is properly passed to the requirements
+            assert luigi.build(
+                [
+                    TestTaskPassDatasetAndResultPathWithKwargs(
+                        dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+                    )
+                ],
+                local_scheduler=True,
+            )
 
-            result_1 = pd.read_csv(
-                tmpdir / "specific_out_path" / "BaseTestTask" / "data" / "test.csv"
+            self._check_results(tmpdir, "out_pass_dataset", "out_pass_dataset/sub_path")
+
+        def test_dataset_propagation_with_config_and_kwargs(
+            self, TestTaskPassDatasetAndResultPathWithKwargs, dataset_df_path, tmpdir
+        ):
+            # Test that the dataset is propagated from the constructor even when a value is already
+            # given in the config
+            with luigi_tools.util.set_luigi_config(
+                {
+                    "BaseTestTask": {
+                        "result_path": str(tmpdir / "specific_out_path"),
+                    }
+                }
+            ):
+                assert luigi.build(
+                    [
+                        TestTaskPassDatasetAndResultPathWithKwargs(
+                            dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+                        )
+                    ],
+                    local_scheduler=True,
+                )
+
+            self._check_results(tmpdir, "out_pass_dataset", "out_pass_dataset/sub_path")
+
+        def test_dataset_propagation_with_input_parameters(
+            self, TestTaskPassDatasetAndResultPathWithInputParameters, dataset_df_path, tmpdir
+        ):
+            # Test that the dataset is properly passed to the requirements
+            assert luigi.build(
+                [
+                    TestTaskPassDatasetAndResultPathWithInputParameters(
+                        dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+                    )
+                ],
+                local_scheduler=True,
             )
-            result_2 = pd.read_csv(
-                tmpdir
-                / "out_pass_dataset"
-                / "TestTaskPassDatasetAndResultPath"
-                / "data"
-                / "test.csv"
-            )
-            expected = pd.read_csv(tmpdir / "dataset.csv")
-            expected["a"] *= 10
-            assert result_1.equals(expected)
-            expected["a"] *= 10
-            assert result_2[["a", "b"]].equals(expected[["a", "b"]])
+
+            self._check_results(tmpdir, "out_pass_dataset", "out_pass_dataset/sub_path")
+
+        def test_dataset_propagation_with_config_and_input_parameters(
+            self, TestTaskPassDatasetAndResultPathWithInputParameters, dataset_df_path, tmpdir
+        ):
+            # Test that the dataset is propagated from the constructor even when a value is already
+            # given in the config
+            with luigi_tools.util.set_luigi_config(
+                {
+                    "BaseTestTask": {
+                        "result_path": str(tmpdir / "specific_out_path"),
+                    }
+                }
+            ):
+                assert luigi.build(
+                    [
+                        TestTaskPassDatasetAndResultPathWithInputParameters(
+                            dataset_df=dataset_df_path, result_path=str(tmpdir / "out_pass_dataset")
+                        )
+                    ],
+                    local_scheduler=True,
+                )
+
+            self._check_results(tmpdir, "out_pass_dataset", "out_pass_dataset/sub_path")
 
     def test_failing_validation_function(self, TestTask, dataset_df_path, tmpdir):
         # Test with a failing validation function
@@ -820,10 +953,13 @@ class TestSetValidationTask:
         class TestDifferentInputIndex(task.ElementValidationTask):
             def inputs(self):
                 return {
-                    TestTask(
-                        dataset_df=dataset_df_path,
-                        input_index_col=self.input_index_col,
-                    ): {}
+                    TestTask: (
+                        {
+                            "dataset_df": dataset_df_path,
+                            "input_index_col": self.input_index_col,
+                        },
+                        {},
+                    )
                 }
 
             @staticmethod
@@ -921,7 +1057,7 @@ class TestElementValidationTask:
 
         class TestWorkflow(task.ValidationWorkflow):
             def inputs(self):
-                return {TestTask(): {}}
+                return {TestTask: {}}
 
         assert (
             TestWorkflow(
@@ -940,7 +1076,7 @@ class TestElementValidationTask:
 
         class TestWorkflow(task.ValidationWorkflow):
             def inputs(self):
-                return {TestTask(): {}}
+                return {TestTask: {}}
 
         assert (
             TestWorkflow(
@@ -987,7 +1123,7 @@ class TestValidationWorkflow:
 
         class TestWorkflow(task.ValidationWorkflow):
             def inputs(self):
-                return {TestTask(): {}}
+                return {TestTask: {}}
 
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
@@ -1054,7 +1190,7 @@ class TestValidationWorkflow:
             generate_report = False
 
             def inputs(self):
-                return {TestTask(): {}}
+                return {TestTask: {}}
 
         assert luigi.build(
             [TestWorkflow(dataset_df=dataset_df_path, result_path=str(tmpdir))],
@@ -1120,8 +1256,8 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestTask(no_exception=self.no_exception, mode=self.mode): {},
-                        TestTask_Specifications(): {},
+                        TestTask: ({"no_exception": self.no_exception, "mode": self.mode}, {}),
+                        TestTask_Specifications: {},
                     }
 
             return TestWorkflow
@@ -1201,7 +1337,7 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestTask_levels(): {},
+                        TestTask_levels: {},
                     }
 
             class TestWorkflow_lvl3(task.ValidationWorkflow):
@@ -1209,7 +1345,7 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestWorkflow_lvl4(): {},
+                        TestWorkflow_lvl4: {},
                     }
 
             class TestWorkflow_lvl2(task.ValidationWorkflow):
@@ -1217,7 +1353,7 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestWorkflow_lvl3(): {},
+                        TestWorkflow_lvl3: {},
                     }
 
             class TestWorkflow_lvl1(task.ValidationWorkflow):
@@ -1225,7 +1361,7 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestWorkflow_lvl2(): {},
+                        TestWorkflow_lvl2: {},
                     }
 
             class TestWorkflow_lvl0(task.ValidationWorkflow):
@@ -1233,7 +1369,7 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestWorkflow_lvl1(): {},
+                        TestWorkflow_lvl1: {},
                     }
 
             root = tmpdir / "rst2pdf_levels"
@@ -1356,7 +1492,7 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestTask_Warning(): {},
+                        TestTask_Warning: {},
                     }
 
             root = tmpdir / "with_warnings"
@@ -1409,8 +1545,8 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestTask(): {},
-                        TestTask_Specifications(): {},
+                        TestTask: {},
+                        TestTask_Specifications: {},
                     }
 
             return TestWorkflow
@@ -1422,8 +1558,8 @@ class TestValidationWorkflow:
 
                 def inputs(self):
                     return {
-                        TestTask(): {},
-                        TestWorkflow(): {},
+                        TestTask: {},
+                        TestWorkflow: {},
                     }
 
             return TestNestedWorkflow
