@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://github.com/BlueBrain/data-validation-framework/compare/0.2.0..0.3.0)
+
+> 4 January 2022
+
+- New mechanism for inputs [#10](https://github.com/BlueBrain/data-validation-framework/pull/10)
+
 ## [0.2.0](https://github.com/BlueBrain/data-validation-framework/compare/0.1.1..0.2.0)
 
 > 20 December 2021
