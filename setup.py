@@ -11,7 +11,7 @@ reqs = [
     "luigi-tools>=0.0.15",
     "pandas",
     "rst2pdf",
-    "sphinx>=3,<4",
+    "sphinx>=3,<5",
     "tqdm",
 ]
 doc_reqs = [
@@ -20,11 +20,12 @@ doc_reqs = [
     "sphinx-bluebrain-theme",
 ]
 test_reqs = [
-    "pause",
     "diff_pdf_visually>=1.6.2",
+    "pause",
     "pytest",
     "pytest-cov",
     "pytest-html",
+    "rst2pdf>=0.99",
 ]
 
 setup(
