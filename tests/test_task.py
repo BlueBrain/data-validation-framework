@@ -9,6 +9,7 @@ import json
 import logging
 import re
 import time
+from pathlib import Path
 from shutil import which
 
 import luigi
@@ -24,6 +25,8 @@ from data_validation_framework import report
 from data_validation_framework import result
 from data_validation_framework import target
 from data_validation_framework import task
+
+from . import check_files_exist
 
 SKIP_IF_NO_LATEXMK = not which("latexmk")
 REASON_NO_LATEXMK = "The command latexmk is not available."
@@ -79,34 +82,208 @@ class TestTagResultOutputMixin:
 
     def test_rerun_interaction(self, tmpdir):
         """Test the data_validation_framework.task.TagResultOutputMixin class."""
+        # pylint: disable=protected-access
+        # pylint: disable=too-many-statements
 
-        class TestTask(luigi_tools.task.RerunMixin, task.TagResultOutputMixin, luigi.Task):
+        class TestTaskLeft(luigi_tools.task.RerunMixin, task.TagResultOutputMixin, luigi.Task):
 
             with_conflict = luigi.BoolParameter(default=False)
+            seed = luigi.IntParameter(default=0, significant=False)
+            root = None
 
             def run(self):
                 if not self.tag_output:
-                    assert self.output().path == str(tmpdir / "out" / "file.test")
+                    assert self.output().path == str(self.root / "file.test")
                 elif not self.with_conflict:
                     assert re.match(
-                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
+                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
                     )
                 else:
                     assert re.match(
-                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
                         self.output().path,
+                    )
+                with self.output().pathlib_path.open("w", encoding="utf-8") as f:
+                    f.writelines(
+                        [
+                            f"{self.root}\n",
+                            f"{self.result_path}\n",
+                            f"{self.seed}\n",
+                            f"{self.tag_output}\n",
+                            f"{self.with_conflict}\n",
+                            f"{self.rerun}",
+                        ]
                     )
 
             def output(self):
                 return target.TaggedOutputLocalTarget("file.test")
 
-        root = tmpdir / "out"
+        class TestTaskRight(task.TagResultOutputMixin, luigi_tools.task.RerunMixin, luigi.Task):
 
-        # Create tagged output directory
+            with_conflict = luigi.BoolParameter(default=False)
+            seed = luigi.IntParameter(default=0, significant=False)
+            root = None
+
+            def run(self):
+                if not self.tag_output:
+                    assert self.output().path == str(self.root / "file.test")
+                elif not self.with_conflict and not self.rerun:
+                    assert re.match(
+                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
+                    )
+                else:
+                    assert re.match(
+                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                        self.output().path,
+                    )
+                with self.output().pathlib_path.open("w", encoding="utf-8") as f:
+                    f.writelines(
+                        [
+                            f"{self.root}\n",
+                            f"{self.result_path}\n",
+                            f"{self.seed}\n",
+                            f"{self.tag_output}\n",
+                            f"{self.with_conflict}\n",
+                            f"{self.rerun}",
+                        ]
+                    )
+
+            def output(self):
+                return target.TaggedOutputLocalTarget("file.test")
+
+        expected_files = []
+
+        # ########################################################################### #
+        # #################### TEST WITH RERUN MIXIN ON THE LEFT #################### #
+        # ########################################################################### #
+
+        # Testing with no tag to create base directory
+        TestTaskLeft.root = tmpdir / "out_left"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        t0 = TestTaskLeft(result_path=TestTaskLeft.root, tag_output=False, with_conflict=False)
+        assert luigi.build([t0], local_scheduler=True)
+
+        expected_files.extend(
+            [
+                "out_left",
+                "out_left/file.test",
+            ]
+        )
+        check_files_exist(tmpdir, expected_files)
+
+        # Testing with tag, no conflict and rerun
+        TestTaskLeft.root = tmpdir / "out_left"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        # Wait for the beginning of the next second
         pause.until(int(time.time()) + 1.01)
 
-        # The t1 task also has conflict because its target prefix is updated before being run
-        t1 = TestTask(result_path=str(root), tag_output=True, with_conflict=True)
+        # There is no conflict here because the tasks are defined before any target is created
+        assert luigi.build(
+            [
+                TestTaskLeft(
+                    result_path=TestTaskLeft.root, seed=0, tag_output=True, with_conflict=False
+                ),
+                TestTaskLeft(
+                    result_path=TestTaskLeft.root,
+                    seed=1,
+                    tag_output=True,
+                    with_conflict=False,
+                    rerun=True,
+                ),
+            ],
+            local_scheduler=True,
+        )
+
+        expected_files.extend(
+            [
+                r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
+            ]
+        )
+        check_files_exist(tmpdir, expected_files)
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", str(i.relative_to(tmpdir))
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_left")
+        assert re.match(str(tmpdir / r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[2:] == ["1", "True", "False", "True"]
+
+        # Testing with tag, no conflict and rerun
+        TestTaskLeft.root = tmpdir / "out_left"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        # Wait for the beginning of the next second
+        pause.until(int(time.time()) + 1.01)
+
+        # There is conflict here because the last task is defined after the Rerun mixin which
+        # created a new directory
+        assert luigi.build(
+            [
+                TestTaskLeft(
+                    result_path=TestTaskLeft.root, seed=0, tag_output=True, with_conflict=True
+                ),
+                TestTaskLeft(
+                    result_path=TestTaskLeft.root,
+                    seed=1,
+                    tag_output=True,
+                    with_conflict=True,
+                    rerun=True,
+                ),
+                TestTaskLeft(
+                    result_path=TestTaskLeft.root, seed=2, tag_output=True, with_conflict=True
+                ),
+            ],
+            local_scheduler=True,
+        )
+
+        expected_files.extend(
+            [
+                r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
+                r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test", str(i.relative_to(tmpdir))
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_left")
+        assert re.match(str(tmpdir / r"out_left_\d{8}-\d{2}h\d{2}m\d{2}s_\d+"), data[1])
+        assert data[2:] == ["2", "True", "True", "False"]
+
+        # Testing with rerun and conflict
+        TestTaskLeft.root = tmpdir / "out_left_with_rerun"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        # Wait for the beginning of the next second
+        pause.until(int(time.time()) + 1.01)
+
+        # The t1 task has no conflict
+        # Note that we have to specify the prefix in the target to avoid conflict. If we do not,
+        # the default prefix is updated when the task t2 is defined, so when t1 is built the prefix
+        # has been changed and thus the assert fails.
+        t1 = TestTaskLeft(result_path=TestTaskLeft.root, tag_output=True, with_conflict=True)
         assert t1.output().path.endswith("s/file.test")
 
         # Test warning is raised when TagResultOutputMixin is used with RerunMixin
@@ -117,14 +294,380 @@ class TestTagResultOutputMixin:
                 r"removing the untagged result directory \(depending on the inheritance order\)."
             ),
         ):
-            t2 = TestTask(result_path=str(root), tag_output=True, with_conflict=True, rerun=True)
+            t2 = TestTaskLeft(
+                result_path=TestTaskLeft.root, tag_output=True, with_conflict=True, rerun=True
+            )
 
         assert t2.output().path.endswith("s_1/file.test")
 
+        # Build without rerun
         assert luigi.build([t1], local_scheduler=True)
 
-        # Test with rerun
+        expected_files.extend(
+            [
+                r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
+                r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    str(i.relative_to(tmpdir)),
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_left_with_rerun")
+        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[2:] == ["0", "True", "True", "False"]
+
+        # Build with rerun
         assert luigi.build([t2], local_scheduler=True)
+
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    str(i.relative_to(tmpdir)),
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_left_with_rerun")
+        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[2:] == ["0", "True", "True", "False"]
+
+        # ########################################################################### #
+        # #################### TEST WITH RERUN MIXIN ON THE RIGHT ################### #
+        # ########################################################################### #
+
+        # Testing with no tag to create base directory
+        TestTaskRight.root = tmpdir / "out_right"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        t0 = TestTaskRight(result_path=TestTaskRight.root, tag_output=False, with_conflict=False)
+        assert luigi.build([t0], local_scheduler=True)
+
+        expected_files.extend(
+            [
+                "out_right",
+                "out_right/file.test",
+            ]
+        )
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        # Testing with tag, no conflict and rerun
+        TestTaskRight.root = tmpdir / "out_right"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        # Wait for the beginning of the next second
+        pause.until(int(time.time()) + 1.01)
+
+        # There is no actual conflict here because the tasks are defined before any target is
+        # created but the Rerun mixin still creates a conflict tag
+        assert luigi.build(
+            [
+                TestTaskRight(
+                    result_path=TestTaskRight.root, seed=0, tag_output=True, with_conflict=False
+                ),
+                TestTaskRight(
+                    result_path=TestTaskRight.root,
+                    seed=1,
+                    tag_output=True,
+                    with_conflict=False,
+                    rerun=True,
+                ),
+            ],
+            local_scheduler=True,
+        )
+
+        expected_files.extend(
+            [
+                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
+                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test", str(i.relative_to(tmpdir))
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_right")
+        assert re.match(str(tmpdir / r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[2:] == ["1", "True", "False", "True"]
+
+        # Testing with tag, no conflict and rerun
+        TestTaskRight.root = tmpdir / "out_right"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        # Wait for the beginning of the next second
+        pause.until(int(time.time()) + 1.01)
+
+        # There is conflict here because the Rerun mixin is executed BEFORE the new tag is created
+        # (and the Rerun mixin created the parent directory of the targets)
+        assert luigi.build(
+            [
+                TestTaskRight(
+                    result_path=TestTaskRight.root, seed=0, tag_output=True, with_conflict=True
+                ),
+                TestTaskRight(
+                    result_path=TestTaskRight.root,
+                    seed=1,
+                    tag_output=True,
+                    with_conflict=True,
+                    rerun=True,
+                ),
+                TestTaskRight(
+                    result_path=TestTaskRight.root, seed=2, tag_output=True, with_conflict=True
+                ),
+            ],
+            local_scheduler=True,
+        )
+
+        expected_files.extend(
+            [
+                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
+                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test", str(i.relative_to(tmpdir))
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_right")
+        assert re.match(str(tmpdir / r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+"), data[1])
+        # Note that this time the task with seed == 2 is not executed!
+        assert data[2:] == ["1", "True", "False", "True"]
+
+        # Testing with rerun and conflict
+        TestTaskRight.root = tmpdir / "out_right_with_rerun"
+        target.TaggedOutputLocalTarget._already_changed = False
+
+        # Wait for the beginning of the next second
+        pause.until(int(time.time()) + 1.01)
+
+        # The t1 task has no conflict
+        # Note that we have to specify the prefix in the target to avoid conflict. If we do not,
+        # the default prefix is updated when the task t2 is defined, so when t1 is built the prefix
+        # has been changed and thus the assert fails.
+        t1 = TestTaskRight(result_path=TestTaskRight.root, tag_output=True, with_conflict=True)
+        assert t1.output().path.endswith("s/file.test")
+
+        # Test warning is raised when TagResultOutputMixin is used with RerunMixin
+        with pytest.warns(
+            UserWarning,
+            match=(
+                "Using 'rerun' with conflicting tag output results in creating a new tag or "
+                r"removing the untagged result directory \(depending on the inheritance order\)."
+            ),
+        ):
+            t2 = TestTaskRight(
+                result_path=TestTaskRight.root, tag_output=True, with_conflict=True, rerun=True
+            )
+
+        assert t2.output().path.endswith("s_1/file.test")
+
+        # Build without rerun
+        assert luigi.build([t1], local_scheduler=True)
+
+        expected_files.extend(
+            [
+                r"out_right_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_right_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
+                r"out_right_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    str(i.relative_to(tmpdir)),
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_left_with_rerun")
+        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[2:] == ["0", "True", "True", "False"]
+
+        # Build with rerun
+        assert luigi.build([t2], local_scheduler=True)
+
+        check_files_exist(
+            tmpdir,
+            expected_files,
+        )
+
+        with Path(
+            [
+                i
+                for i in sorted(Path(tmpdir).rglob("*"))
+                if re.match(
+                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    str(i.relative_to(tmpdir)),
+                )
+            ][0]
+        ).open("r", encoding="utf-8") as f:
+            data = f.read().split("\n")
+        assert data[0] == str(tmpdir / "out_left_with_rerun")
+        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[2:] == ["0", "True", "True", "False"]
+
+    def test_propagation(self, tmpdir, dataset_df_path):
+        """Test the propagation of result_path."""
+
+        class TestTaskA(task.SetValidationTask):
+            """A test validation task."""
+
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                (output_path / "fileA.test").touch()
+
+        class TestTaskB(task.SetValidationTask):
+            """A test validation task."""
+
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                (output_path / "fileB.test").touch()
+
+        class TestWorkflow(task.ValidationWorkflow):
+            """The global validation workflow."""
+
+            with_conflict = luigi.BoolParameter(default=False)
+
+            def inputs(self):
+                return {
+                    TestTaskA: {},
+                    TestTaskB: {},
+                }
+
+            def kwargs(self):
+                return {
+                    "tag_output": self.tag_output,
+                    "with_conflict": self.with_conflict,
+                }
+
+            @staticmethod
+            def validation_function(df, output_path, *args, tag_output, with_conflict, **kwargs):
+                res_files = sorted(Path(output_path.parent.parent).rglob("*"))
+                if not tag_output:
+                    suffix = ""
+                elif not with_conflict:
+                    suffix = r"_\d{8}-\d{2}h\d{2}m\d{2}s"
+                else:
+                    suffix = r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+"
+                expected_patterns = [
+                    f"{tmpdir}/out" + suffix + "/TestTaskA",
+                    f"{tmpdir}/out" + suffix + "/TestTaskA/data",
+                    f"{tmpdir}/out" + suffix + "/TestTaskA/data/fileA.test",
+                    f"{tmpdir}/out" + suffix + "/TestTaskA/report.csv",
+                    f"{tmpdir}/out" + suffix + "/TestTaskB",
+                    f"{tmpdir}/out" + suffix + "/TestTaskB/data",
+                    f"{tmpdir}/out" + suffix + "/TestTaskB/data/fileB.test",
+                    f"{tmpdir}/out" + suffix + "/TestTaskB/report.csv",
+                    f"{tmpdir}/out" + suffix + "/TestWorkflow",
+                    f"{tmpdir}/out" + suffix + "/TestWorkflow/data",
+                ]
+                assert len(res_files) == len(expected_patterns)
+                for path, pattern in zip(res_files, expected_patterns):
+                    assert re.match(str(pattern), str(path))
+
+        root = tmpdir / "out"
+
+        workflow = TestWorkflow(
+            dataset_df=dataset_df_path,
+            result_path=str(root),
+            tag_output=False,
+            with_conflict=False,
+        )
+        assert luigi.build([workflow], local_scheduler=True)
+
+        report_df = pd.read_csv(workflow.result_path / "TestWorkflow" / "report.csv")
+        assert report_df["is_valid"].all()
+
+        # Test tag name conflicts
+        pause.until(int(time.time()) + 1.01)
+
+        workflow_1 = TestWorkflow(
+            dataset_df=dataset_df_path,
+            result_path=str(root),
+            tag_output=True,
+            with_conflict=False,
+        )
+        assert re.match(
+            r"out_\d{8}-\d{2}h\d{2}m\d{2}s/TestWorkflow/report.csv",
+            str(workflow_1.output()["report"].pathlib_path.relative_to(tmpdir)),
+        )
+        # Create the result directory of workflow_1 so that it appears to have already run for
+        # workflow_2
+        workflow_1.output()["data"].pathlib_path.mkdir(parents=True, exist_ok=True)
+
+        workflow_2 = TestWorkflow(
+            dataset_df=dataset_df_path,
+            result_path=str(root),
+            tag_output=True,
+            with_conflict=True,
+        )
+        assert re.match(
+            r"out_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/TestWorkflow/report.csv",
+            str(workflow_2.output()["report"].pathlib_path.relative_to(tmpdir)),
+        )
+
+        assert luigi.build([workflow_1, workflow_2], local_scheduler=True)
+
+        report_df_1 = pd.read_csv(workflow_1.result_path / "TestWorkflow" / "report.csv")
+        assert report_df_1["is_valid"].all()
+        report_df_2 = pd.read_csv(workflow_2.result_path / "TestWorkflow" / "report.csv")
+        assert report_df_2["is_valid"].all()
 
 
 class TestSetValidationTask:

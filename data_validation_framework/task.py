@@ -45,10 +45,10 @@ class TagResultOutputMixin:
         If this mixin is used alongside the :class:`luigi_tools.task.RerunMixin`, then it can have
         two different behaviors:
 
-        * if placed on the right side of the `RerunMixin`, a new tag is create and thus rerun does
+        * if placed on the right side of the `RerunMixin`, a new tag is created and thus rerun does
           not do anything.
-        * if placed on the left side of the `RerunMixin`, the untagged directory is remove then a
-          tagged directory is created.
+        * if placed on the left side of the `RerunMixin`, the targets from the tagged directory
+          without conflict are removed then a new tagged directory with conflict is created.
     """
 
     tag_output = BoolParameter(
@@ -57,6 +57,7 @@ class TagResultOutputMixin:
     result_path = OptionalPathParameter(
         default=None, description=":str: Path to the global output directory."
     )
+    target_cls = TaggedOutputLocalTarget
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,7 +65,7 @@ class TagResultOutputMixin:
         def num_tag(path, num):
             return path.with_name(f"{path.name}_{num}")
 
-        if self.tag_output:
+        if self.tag_output and self.result_path is not None:
             path = Path(f"{self.result_path}_{time.strftime('%Y%m%d-%Hh%Mm%Ss')}")
             tagged_output = path
             num = 0
@@ -82,8 +83,8 @@ class TagResultOutputMixin:
             L.info("Tagged output is: %s", tagged_output)
             self.result_path = tagged_output
 
-        if self.result_path is not None:
-            TaggedOutputLocalTarget.set_default_prefix(self.result_path)
+        if self.result_path is not None and issubclass(self.target_cls, TaggedOutputLocalTarget):
+            self.target_cls.set_default_prefix(self.result_path)
 
 
 class InputParameters:
@@ -605,17 +606,16 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def output(self):
         """The targets of the current task."""
         class_path = Path(self.task_name)
-        prefix = None if self.result_path is None else self.result_path.absolute()
         return {
             "report": ReportTarget(
                 class_path / "report.csv",
-                prefix=prefix,
+                prefix=self.result_path,
                 create_parent=False,  # Do not create the parent here because of the tagged output
                 task_name=self.task_name,
             ),
             "data": TaggedOutputLocalTarget(
                 class_path / self.data_dir,
-                prefix=prefix,
+                prefix=self.result_path,
                 create_parent=False,  # Do not create the parent here because of the tagged output
             ),
         }
