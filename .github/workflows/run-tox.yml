@@ -33,3 +33,12 @@ jobs:
         files: ./reports/coverage-py38.xml
         flags: pytest
         name: "data-validation-framework-py38"
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: tests-${{ matrix.python-version }}
+        retention-days: 1
+        path: |
+          .tox/py*/tmp
+          .tox/docs/tmp
