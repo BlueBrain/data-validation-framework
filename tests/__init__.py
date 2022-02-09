@@ -12,8 +12,11 @@ def check_files_exist(directory, pattern_list):
             assert re.match(str(pattern), path)
     except Exception as exc:
         raise RuntimeError(
-            f"Error when checking the files.\n\tThe directory is: {directory}\n"
-            f"\tThe found files are: {existing_files}\n"
-            f"\tThe patterns are: {pattern_list}"
+            "Error when checking the files.\n\t"
+            f"The directory is: {directory}\n"
+            "\t"
+            f"The found files are: {existing_files}\n"
+            "\t"
+            f"The patterns are: {pattern_list}"
         ) from exc
     return True

@@ -175,7 +175,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
         ),
     )
 
-    # User attributs
+    # User attributes
     output_columns = None
     """dict: A dict with names as keys and empty values as values for new columns created by the
     current task.
@@ -186,7 +186,7 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     :meth:`validation_function`.
     """
 
-    # Internal attributs
+    # Internal attributes
     nb_total = None
     """int: Total number of processed elements."""
     nb_valid = None
@@ -292,8 +292,8 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
     def read_dataset(self):
         """Import the dataset to a :class:`pandas.DataFrame`.
 
-        This method can be overriden to load custom data (e.g. GeoDataFrame, etc.).
-        The dataset should alway be loaded from the path given by `self.dataset_df`.
+        This method can be overridden to load custom data (e.g. GeoDataFrame, etc.).
+        The dataset should always be loaded from the path given by `self.dataset_df`.
         """
         return pd.read_csv(self.dataset_df, index_col=self.input_index_col)
 
@@ -653,7 +653,7 @@ class ElementValidationTask(BaseValidationTask):
 
 
 class SetValidationTask(BaseValidationTask):
-    """A class to validate an entire data set (usefull for global properties).
+    """A class to validate an entire data set (useful for global properties).
 
     The ``validation_function`` will receive the DataFrame and the output_path as first arguments.
 
@@ -807,8 +807,8 @@ def SkippableMixin(default_value=False):
                 )
             else:
                 raise TypeError(
-                    "The SkippableMixin can only be associated with childs of ElementValidationTask"
-                    " or SetValidationTask"
+                    "The SkippableMixin can only be associated with children of "
+                    "ElementValidationTask or SetValidationTask"
                 )
             self._skippable_validation_function = self.validation_function
             self.validation_function = new_validation_function
