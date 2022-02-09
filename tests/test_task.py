@@ -2254,7 +2254,7 @@ class TestSkippableMixin:
 
     def test_fail_parent_type(self):
         err_msg = (
-            "The SkippableMixin can only be associated with childs of ElementValidationTask"
+            "The SkippableMixin can only be associated with children of ElementValidationTask"
             " or SetValidationTask"
         )
 
