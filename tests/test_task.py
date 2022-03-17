@@ -54,19 +54,26 @@ class TestTagResultOutputMixin:
 
             def run(self):
                 if not self.tag_output:
-                    assert self.output().path == str(tmpdir / "out" / "file.test")
+                    assert self.output()["without_prefix"].path == str(tmpdir / "file.test")
+                    assert self.output()["with_prefix"].path == str(tmpdir / "out" / "file.test")
                 elif not self.with_conflict:
                     assert re.match(
-                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
+                        f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
+                        self.output()["with_prefix"].path,
                     )
                 else:
                     assert re.match(
                         f"{tmpdir}/out" + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
-                        self.output().path,
+                        self.output()["with_prefix"].path,
                     )
 
             def output(self):
-                return target.TaggedOutputLocalTarget("file.test")
+                return {
+                    "without_prefix": target.TaggedOutputLocalTarget("file.test"),
+                    "with_prefix": target.TaggedOutputLocalTarget(
+                        "file.test", prefix=self.result_path
+                    ),
+                }
 
         root = tmpdir / "out"
         assert luigi.build([TestTask(result_path=str(root))], local_scheduler=True)
@@ -80,10 +87,11 @@ class TestTagResultOutputMixin:
         t2 = TestTask(result_path=str(root), tag_output=True, with_conflict=True)
         assert luigi.build([t2], local_scheduler=True)
 
-    def test_rerun_interaction(self, tmpdir):
+    def test_rerun_interaction_left(self, tmpdir):
         """Test the data_validation_framework.task.TagResultOutputMixin class."""
         # pylint: disable=protected-access
         # pylint: disable=too-many-statements
+        executed = []
 
         class TestTaskLeft(luigi_tools.task.RerunMixin, task.TagResultOutputMixin, luigi.Task):
 
@@ -92,6 +100,15 @@ class TestTagResultOutputMixin:
             root = None
 
             def run(self):
+                executed.append(
+                    (
+                        self.result_path,
+                        self.output().path,
+                        self.with_conflict,
+                        self.rerun,
+                        self.seed,
+                    )
+                )
                 if not self.tag_output:
                     assert self.output().path == str(self.root / "file.test")
                 elif not self.with_conflict:
@@ -116,40 +133,7 @@ class TestTagResultOutputMixin:
                     )
 
             def output(self):
-                return target.TaggedOutputLocalTarget("file.test")
-
-        class TestTaskRight(task.TagResultOutputMixin, luigi_tools.task.RerunMixin, luigi.Task):
-
-            with_conflict = luigi.BoolParameter(default=False)
-            seed = luigi.IntParameter(default=0, significant=False)
-            root = None
-
-            def run(self):
-                if not self.tag_output:
-                    assert self.output().path == str(self.root / "file.test")
-                elif not self.with_conflict and not self.rerun:
-                    assert re.match(
-                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test", self.output().path
-                    )
-                else:
-                    assert re.match(
-                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
-                        self.output().path,
-                    )
-                with self.output().pathlib_path.open("w", encoding="utf-8") as f:
-                    f.writelines(
-                        [
-                            f"{self.root}\n",
-                            f"{self.result_path}\n",
-                            f"{self.seed}\n",
-                            f"{self.tag_output}\n",
-                            f"{self.with_conflict}\n",
-                            f"{self.rerun}",
-                        ]
-                    )
-
-            def output(self):
-                return target.TaggedOutputLocalTarget("file.test")
+                return target.TaggedOutputLocalTarget("file.test", prefix=self.result_path)
 
         expected_files = []
 
@@ -195,6 +179,8 @@ class TestTagResultOutputMixin:
             ],
             local_scheduler=True,
         )
+        assert len(executed) == 2
+        executed.clear()
 
         expected_files.extend(
             [
@@ -245,6 +231,8 @@ class TestTagResultOutputMixin:
             ],
             local_scheduler=True,
         )
+        assert len(executed) == 1  # Note that only the last task is executed here
+        executed.clear()
 
         expected_files.extend(
             [
@@ -280,10 +268,7 @@ class TestTagResultOutputMixin:
         pause.until(int(time.time()) + 1.01)
 
         # The t1 task has no conflict
-        # Note that we have to specify the prefix in the target to avoid conflict. If we do not,
-        # the default prefix is updated when the task t2 is defined, so when t1 is built the prefix
-        # has been changed and thus the assert fails.
-        t1 = TestTaskLeft(result_path=TestTaskLeft.root, tag_output=True, with_conflict=True)
+        t1 = TestTaskLeft(result_path=TestTaskLeft.root, tag_output=True, with_conflict=False)
         assert t1.output().path.endswith("s/file.test")
 
         # Test warning is raised when TagResultOutputMixin is used with RerunMixin
@@ -302,12 +287,14 @@ class TestTagResultOutputMixin:
 
         # Build without rerun
         assert luigi.build([t1], local_scheduler=True)
+        assert len(executed) == 1
+        executed.clear()
 
         expected_files.extend(
             [
                 r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
                 r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
-                r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
             ]
         )
         check_files_exist(
@@ -320,7 +307,7 @@ class TestTagResultOutputMixin:
                 i
                 for i in sorted(Path(tmpdir).rglob("*"))
                 if re.match(
-                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
                     str(i.relative_to(tmpdir)),
                 )
             ][0]
@@ -328,10 +315,18 @@ class TestTagResultOutputMixin:
             data = f.read().split("\n")
         assert data[0] == str(tmpdir / "out_left_with_rerun")
         assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
-        assert data[2:] == ["0", "True", "True", "False"]
+        assert data[2:] == ["0", "True", "False", "False"]
 
         # Build with rerun
         assert luigi.build([t2], local_scheduler=True)
+        assert len(executed) == 1
+        executed.clear()
+
+        expected_files.extend(
+            [
+                r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
 
         check_files_exist(
             tmpdir,
@@ -350,24 +345,77 @@ class TestTagResultOutputMixin:
         ).open("r", encoding="utf-8") as f:
             data = f.read().split("\n")
         assert data[0] == str(tmpdir / "out_left_with_rerun")
-        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
-        assert data[2:] == ["0", "True", "True", "False"]
+        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+"), data[1])
+        assert data[2:] == ["0", "True", "True", "True"]
+
+    def test_rerun_interaction_right(self, tmpdir):
+        """Test the data_validation_framework.task.TagResultOutputMixin class."""
+        # pylint: disable=protected-access
+        # pylint: disable=too-many-statements
+        executed = []
+
+        class TestTaskRight(task.TagResultOutputMixin, luigi_tools.task.RerunMixin, luigi.Task):
+
+            with_conflict = luigi.BoolParameter(default=False)
+            seed = luigi.IntParameter(default=0, significant=False)
+            root = None
+
+            def run(self):
+                executed.append(
+                    (
+                        self.result_path,
+                        self.output().path,
+                        self.with_conflict,
+                        self.rerun,
+                        self.seed,
+                    )
+                )
+                if not self.tag_output:
+                    assert self.output().path == str(self.root / "file.test")
+                elif self.with_conflict and self.rerun:
+                    assert re.match(
+                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                        self.output().path,
+                    )
+                else:
+                    assert re.match(
+                        str(self.root) + r"_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
+                        self.output().path,
+                    )
+                with self.output().pathlib_path.open("w", encoding="utf-8") as f:
+                    f.writelines(
+                        [
+                            f"{self.root}\n",
+                            f"{self.result_path}\n",
+                            f"{self.seed}\n",
+                            f"{self.tag_output}\n",
+                            f"{self.with_conflict}\n",
+                            f"{self.rerun}",
+                        ]
+                    )
+
+            def output(self):
+                return target.TaggedOutputLocalTarget("file.test", prefix=self.result_path)
+
+        expected_files = []
 
         # ########################################################################### #
         # #################### TEST WITH RERUN MIXIN ON THE RIGHT ################### #
         # ########################################################################### #
 
         # Testing with no tag to create base directory
-        TestTaskRight.root = tmpdir / "out_right"
+        TestTaskRight.root = tmpdir / "out_right_no-tag"
         target.TaggedOutputLocalTarget._already_changed = False
 
         t0 = TestTaskRight(result_path=TestTaskRight.root, tag_output=False, with_conflict=False)
         assert luigi.build([t0], local_scheduler=True)
+        assert len(executed) == 1
+        executed.clear()
 
         expected_files.extend(
             [
-                "out_right",
-                "out_right/file.test",
+                "out_right_no-tag",
+                "out_right_no-tag/file.test",
             ]
         )
         check_files_exist(
@@ -376,14 +424,15 @@ class TestTagResultOutputMixin:
         )
 
         # Testing with tag, no conflict and rerun
-        TestTaskRight.root = tmpdir / "out_right"
+        TestTaskRight.root = tmpdir / "out_right_tag_no-conflict"
         target.TaggedOutputLocalTarget._already_changed = False
 
         # Wait for the beginning of the next second
         pause.until(int(time.time()) + 1.01)
 
         # There is no actual conflict here because the tasks are defined before any target is
-        # created but the Rerun mixin still creates a conflict tag
+        # created but the Rerun mixin removes the targets BEFORE the tag is created and creates
+        # an empty directory with no tag.
         assert luigi.build(
             [
                 TestTaskRight(
@@ -399,12 +448,15 @@ class TestTagResultOutputMixin:
             ],
             local_scheduler=True,
         )
+        assert len(executed) == 1  # Note that the first task is not executed here
+        executed.clear()
 
+        # expected_files.pop()  # Expect to not find the target of the task without tag
         expected_files.extend(
             [
-                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s",
-                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
-                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                r"out_right_tag_no-conflict",
+                r"out_right_tag_no-conflict_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_right_tag_no-conflict_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
             ]
         )
         check_files_exist(
@@ -417,17 +469,20 @@ class TestTagResultOutputMixin:
                 i
                 for i in sorted(Path(tmpdir).rglob("*"))
                 if re.match(
-                    r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test", str(i.relative_to(tmpdir))
+                    r"out_right_tag_no-conflict_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
+                    str(i.relative_to(tmpdir)),
                 )
             ][0]
         ).open("r", encoding="utf-8") as f:
             data = f.read().split("\n")
-        assert data[0] == str(tmpdir / "out_right")
-        assert re.match(str(tmpdir / r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[0] == str(tmpdir / "out_right_tag_no-conflict")
+        assert re.match(
+            str(tmpdir / r"out_right_tag_no-conflict_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1]
+        )
         assert data[2:] == ["1", "True", "False", "True"]
 
         # Testing with tag, no conflict and rerun
-        TestTaskRight.root = tmpdir / "out_right"
+        TestTaskRight.root = tmpdir / "out_right_tag_with-conflict_rerun_3-tasks"
         target.TaggedOutputLocalTarget._already_changed = False
 
         # Wait for the beginning of the next second
@@ -453,12 +508,14 @@ class TestTagResultOutputMixin:
             ],
             local_scheduler=True,
         )
+        assert len(executed) == 1  # Note that only the last task is executed here
+        executed.clear()
 
         expected_files.extend(
             [
-                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s",
-                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
-                r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                r"out_right_tag_with-conflict_rerun_3-tasks",
+                r"out_right_tag_with-conflict_rerun_3-tasks_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_right_tag_with-conflict_rerun_3-tasks_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
             ]
         )
         check_files_exist(
@@ -471,18 +528,22 @@ class TestTagResultOutputMixin:
                 i
                 for i in sorted(Path(tmpdir).rglob("*"))
                 if re.match(
-                    r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test", str(i.relative_to(tmpdir))
+                    r"out_right_tag_with-conflict_rerun_3-tasks_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
+                    str(i.relative_to(tmpdir)),
                 )
             ][0]
         ).open("r", encoding="utf-8") as f:
             data = f.read().split("\n")
-        assert data[0] == str(tmpdir / "out_right")
-        assert re.match(str(tmpdir / r"out_right_\d{8}-\d{2}h\d{2}m\d{2}s_\d+"), data[1])
-        # Note that this time the task with seed == 2 is not executed!
-        assert data[2:] == ["1", "True", "False", "True"]
+        assert data[0] == str(tmpdir / "out_right_tag_with-conflict_rerun_3-tasks")
+        assert re.match(
+            str(tmpdir / r"out_right_tag_with-conflict_rerun_3-tasks_\d{8}-\d{2}h\d{2}m\d{2}s"),
+            data[1],
+        )
+        # Note that this time only the task with seed == 2 is executed!
+        assert data[2:] == ["2", "True", "True", "False"]
 
         # Testing with rerun and conflict
-        TestTaskRight.root = tmpdir / "out_right_with_rerun"
+        TestTaskRight.root = tmpdir / "out_right_tag_with-conflict_with-rerun"
         target.TaggedOutputLocalTarget._already_changed = False
 
         # Wait for the beginning of the next second
@@ -511,12 +572,15 @@ class TestTagResultOutputMixin:
 
         # Build without rerun
         assert luigi.build([t1], local_scheduler=True)
+        assert len(executed) == 1
+        executed.clear()
 
         expected_files.extend(
             [
-                r"out_right_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s",
-                r"out_right_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
-                r"out_right_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                r"out_right_tag_with-conflict_with-rerun",
+                r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s",
+                r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
+                r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+",
             ]
         )
         check_files_exist(
@@ -529,19 +593,29 @@ class TestTagResultOutputMixin:
                 i
                 for i in sorted(Path(tmpdir).rglob("*"))
                 if re.match(
-                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s/file.test",
                     str(i.relative_to(tmpdir)),
                 )
             ][0]
         ).open("r", encoding="utf-8") as f:
             data = f.read().split("\n")
-        assert data[0] == str(tmpdir / "out_left_with_rerun")
-        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
+        assert data[0] == str(tmpdir / "out_right_tag_with-conflict_with-rerun")
+        assert re.match(
+            str(tmpdir / r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s"),
+            data[1],
+        )
         assert data[2:] == ["0", "True", "True", "False"]
 
         # Build with rerun
         assert luigi.build([t2], local_scheduler=True)
+        assert len(executed) == 1
+        executed.clear()
 
+        expected_files.extend(
+            [
+                r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+            ]
+        )
         check_files_exist(
             tmpdir,
             expected_files,
@@ -552,15 +626,21 @@ class TestTagResultOutputMixin:
                 i
                 for i in sorted(Path(tmpdir).rglob("*"))
                 if re.match(
-                    r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test",
+                    (
+                        "out_right_tag_with-conflict_with-rerun_"
+                        r"\d{8}-\d{2}h\d{2}m\d{2}s_\d+/file.test"
+                    ),
                     str(i.relative_to(tmpdir)),
                 )
             ][0]
         ).open("r", encoding="utf-8") as f:
             data = f.read().split("\n")
-        assert data[0] == str(tmpdir / "out_left_with_rerun")
-        assert re.match(str(tmpdir / r"out_left_with_rerun_\d{8}-\d{2}h\d{2}m\d{2}s"), data[1])
-        assert data[2:] == ["0", "True", "True", "False"]
+        assert data[0] == str(tmpdir / "out_right_tag_with-conflict_with-rerun")
+        assert re.match(
+            str(tmpdir / r"out_right_tag_with-conflict_with-rerun_\d{8}-\d{2}h\d{2}m\d{2}s"),
+            data[1],
+        )
+        assert data[2:] == ["0", "True", "True", "True"]
 
     def test_propagation(self, tmpdir, dataset_df_path):
         """Test the propagation of result_path."""

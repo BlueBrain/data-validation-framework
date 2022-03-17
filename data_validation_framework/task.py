@@ -24,6 +24,7 @@ from numpy import VisibleDeprecationWarning
 from data_validation_framework.report import make_report
 from data_validation_framework.result import ValidationResult
 from data_validation_framework.result import ValidationResultSet
+from data_validation_framework.target import DataDirectoryTarget
 from data_validation_framework.target import ReportTarget
 from data_validation_framework.target import TaggedOutputLocalTarget
 from data_validation_framework.util import apply_to_df
@@ -82,9 +83,6 @@ class TagResultOutputMixin:
 
             L.info("Tagged output is: %s", tagged_output)
             self.result_path = tagged_output
-
-        if self.result_path is not None and issubclass(self.target_cls, TaggedOutputLocalTarget):
-            self.target_cls.set_default_prefix(self.result_path)
 
 
 class InputParameters:
@@ -613,10 +611,11 @@ class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi
                 create_parent=False,  # Do not create the parent here because of the tagged output
                 task_name=self.task_name,
             ),
-            "data": TaggedOutputLocalTarget(
+            "data": DataDirectoryTarget(
                 class_path / self.data_dir,
                 prefix=self.result_path,
                 create_parent=False,  # Do not create the parent here because of the tagged output
+                task_name=self.task_name,
             ),
         }
 
