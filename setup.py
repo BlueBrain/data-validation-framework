@@ -8,7 +8,7 @@ with open("README.md", encoding="utf-8") as f:
 
 reqs = [
     "luigi",
-    "luigi-tools>=0.0.15",
+    "luigi-tools>=0.0.17",
     "pandas",
     "rst2pdf",
     "sphinx>=3,<5",

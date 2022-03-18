@@ -22,9 +22,17 @@ class TaggedOutputLocalTarget(OutputLocalTarget):
         super().set_default_prefix(prefix)
 
 
-class ReportTarget(TaggedOutputLocalTarget):
-    """Specific target for BaseValidationTask reports."""
+class _WithTaskNameMixin:
+    """Mixin to add the task name as attribute."""
 
     def __init__(self, *args, task_name=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.task_name = task_name
+
+
+class ReportTarget(_WithTaskNameMixin, TaggedOutputLocalTarget):
+    """Specific target for BaseValidationTask reports."""
+
+
+class DataDirectoryTarget(_WithTaskNameMixin, TaggedOutputLocalTarget):
+    """Specific target for BaseValidationTask reports."""
