@@ -1,8 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/BlueBrain/data-validation-framework/compare/0.3.0..0.4.0)
+
+> 18 March 2022
+
+- Fix target prefix and do not set default prefix any more [#16](https://github.com/BlueBrain/data-validation-framework/pull/16)
+- Upload artifacts of test jobs for debugging purpose [#15](https://github.com/BlueBrain/data-validation-framework/pull/15)
+- Add codespell in lint [#14](https://github.com/BlueBrain/data-validation-framework/pull/14)
+- Fix TagResultOutputMixin [#13](https://github.com/BlueBrain/data-validation-framework/pull/13)
+- Fix CI for rst2pdf&gt;=0.99 [#12](https://github.com/BlueBrain/data-validation-framework/pull/12)
+
 ## [0.3.0](https://github.com/BlueBrain/data-validation-framework/compare/0.2.0..0.3.0)
 
-> 4 January 2022
+> 12 January 2022
 
 - New mechanism for inputs [#10](https://github.com/BlueBrain/data-validation-framework/pull/10)
 
