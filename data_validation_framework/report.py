@@ -78,7 +78,7 @@ def build_subtree(node, deps, known_nodes=None):
         if t not in known_nodes:
             subtree[t] = {}
             known_nodes.add(t)
-    for t in subtree:
+    for t in subtree.keys():  # pylint: disable=consider-iterating-dictionary
         subtree[t] = build_subtree(t, deps, known_nodes)
     return subtree
 
