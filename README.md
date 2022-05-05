@@ -185,4 +185,4 @@ Board of the Swiss Federal Institutes of Technology.
 
 For license and authors, see `LICENSE.txt` and `AUTHORS.md` respectively.
 
-Copyright © 2021 Blue Brain Project/EPFL
+Copyright © 2021-2022 Blue Brain Project/EPFL
