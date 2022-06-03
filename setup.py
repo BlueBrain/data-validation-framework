@@ -34,7 +34,7 @@ setup(
     description="Simple framework to create data validation workflows.",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://bbpteam.epfl.ch/documentation/projects/data-validation-framework",
+    url="https://data-validation-framework.readthedocs.io/en/latest/",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/data-validation-framework/issues",
         "Source": "https://github.com/BlueBrain/data-validation-framework",
