@@ -17,6 +17,7 @@ from luigi_tools.parameter import OptionalBoolParameter
 from luigi_tools.parameter import OptionalIntParameter
 from luigi_tools.parameter import OptionalPathParameter
 from luigi_tools.parameter import OptionalStrParameter
+from luigi_tools.task import CheckUnconsumedParamsMixin
 from luigi_tools.task import LogTargetMixin
 from luigi_tools.task import RerunMixin
 from numpy import VisibleDeprecationWarning
@@ -120,7 +121,13 @@ class InputParameters:
         self.kwargs = kwargs
 
 
-class BaseValidationTask(LogTargetMixin, RerunMixin, TagResultOutputMixin, luigi.Task):
+class BaseValidationTask(
+    CheckUnconsumedParamsMixin,
+    LogTargetMixin,
+    RerunMixin,
+    TagResultOutputMixin,
+    luigi.Task,
+):
     """Base luigi task used for validation steps.
 
     .. warning::
