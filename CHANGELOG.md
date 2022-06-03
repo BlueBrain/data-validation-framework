@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0](https://github.com/BlueBrain/data-validation-framework/compare/0.4.0..0.5.0)
+
+- Use CheckUnconsumedParamsMixin in BaseValidationTask [#20](https://github.com/BlueBrain/data-validation-framework/pull/20)
+- Updating copyright year [#18](https://github.com/BlueBrain/data-validation-framework/pull/18)
+- CI: Bump black [#19](https://github.com/BlueBrain/data-validation-framework/pull/19)
+
 ## [0.4.0](https://github.com/BlueBrain/data-validation-framework/compare/0.3.0..0.4.0)
 
 > 18 March 2022
