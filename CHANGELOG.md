@@ -1,6 +1,14 @@
 # Changelog
 
+## [0.5.1](https://github.com/BlueBrain/data-validation-framework/compare/0.5.0..0.5.1)
+
+> 3 June 2022
+
+- Fix link to documentation [#22](https://github.com/BlueBrain/data-validation-framework/pull/22)
+
 ## [0.5.0](https://github.com/BlueBrain/data-validation-framework/compare/0.4.0..0.5.0)
+
+> 3 June 2022
 
 - Use CheckUnconsumedParamsMixin in BaseValidationTask [#20](https://github.com/BlueBrain/data-validation-framework/pull/20)
 - Updating copyright year [#18](https://github.com/BlueBrain/data-validation-framework/pull/18)
