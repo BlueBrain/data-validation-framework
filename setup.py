@@ -7,7 +7,7 @@ with open("README.md", encoding="utf-8") as f:
     README = f.read()
 
 reqs = [
-    "luigi",
+    "luigi>=3.1",
     "luigi-tools>=0.0.18",
     "pandas",
     "rst2pdf",

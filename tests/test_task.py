@@ -19,7 +19,7 @@ import pandas as pd
 import pause
 import pytest
 from diff_pdf_visually import pdfdiff
-from luigi_tools.parameter import OptionalStrParameter
+from luigi.parameter import OptionalStrParameter
 
 from data_validation_framework import report
 from data_validation_framework import result
