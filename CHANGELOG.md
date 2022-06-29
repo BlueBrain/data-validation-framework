@@ -1,54 +1,61 @@
 # Changelog
 
+## [0.6.0](https://github.com/BlueBrain/data-validation-framework/compare/0.5.1..0.6.0)
+
+> 29 June 2022
+
+- Use features from luigi &gt;= 3.1 instead of luigi-tools (Adrien Berchet - [#26](https://github.com/BlueBrain/data-validation-framework/pull/26))
+- Build and publish wheels (Adrien Berchet - [#24](https://github.com/BlueBrain/data-validation-framework/pull/24))
+
 ## [0.5.1](https://github.com/BlueBrain/data-validation-framework/compare/0.5.0..0.5.1)
 
 > 3 June 2022
 
-- Fix link to documentation [#22](https://github.com/BlueBrain/data-validation-framework/pull/22)
+- Fix link to documentation (Adrien Berchet - [#22](https://github.com/BlueBrain/data-validation-framework/pull/22))
 
 ## [0.5.0](https://github.com/BlueBrain/data-validation-framework/compare/0.4.0..0.5.0)
 
 > 3 June 2022
 
-- Use CheckUnconsumedParamsMixin in BaseValidationTask [#20](https://github.com/BlueBrain/data-validation-framework/pull/20)
-- Updating copyright year [#18](https://github.com/BlueBrain/data-validation-framework/pull/18)
-- CI: Bump black [#19](https://github.com/BlueBrain/data-validation-framework/pull/19)
+- Use CheckUnconsumedParamsMixin in BaseValidationTask (Adrien Berchet - [#20](https://github.com/BlueBrain/data-validation-framework/pull/20))
+- Updating copyright year (bbpgithubaudit - [#18](https://github.com/BlueBrain/data-validation-framework/pull/18))
+- CI: Bump black (Adrien Berchet - [#19](https://github.com/BlueBrain/data-validation-framework/pull/19))
 
 ## [0.4.0](https://github.com/BlueBrain/data-validation-framework/compare/0.3.0..0.4.0)
 
 > 18 March 2022
 
-- Fix target prefix and do not set default prefix any more [#16](https://github.com/BlueBrain/data-validation-framework/pull/16)
-- Upload artifacts of test jobs for debugging purpose [#15](https://github.com/BlueBrain/data-validation-framework/pull/15)
-- Add codespell in lint [#14](https://github.com/BlueBrain/data-validation-framework/pull/14)
-- Fix TagResultOutputMixin [#13](https://github.com/BlueBrain/data-validation-framework/pull/13)
-- Fix CI for rst2pdf&gt;=0.99 [#12](https://github.com/BlueBrain/data-validation-framework/pull/12)
+- Fix target prefix and do not set default prefix any more (Adrien Berchet - [#16](https://github.com/BlueBrain/data-validation-framework/pull/16))
+- Upload artifacts of test jobs for debugging purpose (Adrien Berchet - [#15](https://github.com/BlueBrain/data-validation-framework/pull/15))
+- Add codespell in lint (Adrien Berchet - [#14](https://github.com/BlueBrain/data-validation-framework/pull/14))
+- Fix TagResultOutputMixin (Adrien Berchet - [#13](https://github.com/BlueBrain/data-validation-framework/pull/13))
+- Fix CI for rst2pdf&gt;=0.99 (Adrien Berchet - [#12](https://github.com/BlueBrain/data-validation-framework/pull/12))
 
 ## [0.3.0](https://github.com/BlueBrain/data-validation-framework/compare/0.2.0..0.3.0)
 
 > 12 January 2022
 
-- New mechanism for inputs [#10](https://github.com/BlueBrain/data-validation-framework/pull/10)
+- New mechanism for inputs (Adrien Berchet - [#10](https://github.com/BlueBrain/data-validation-framework/pull/10))
 
 ## [0.2.0](https://github.com/BlueBrain/data-validation-framework/compare/0.1.1..0.2.0)
 
 > 20 December 2021
 
-- Add a mixin to make the task skippable [#7](https://github.com/BlueBrain/data-validation-framework/pull/7)
-- Setup Codecov [#6](https://github.com/BlueBrain/data-validation-framework/pull/6)
+- Add a mixin to make the task skippable (Adrien Berchet - [#7](https://github.com/BlueBrain/data-validation-framework/pull/7))
+- Setup Codecov (Adrien Berchet - [#6](https://github.com/BlueBrain/data-validation-framework/pull/6))
 
 ## [0.1.1](https://github.com/BlueBrain/data-validation-framework/compare/0.1.0..0.1.1)
 
 > 15 December 2021
 
-- Fix typos in README [#4](https://github.com/BlueBrain/data-validation-framework/pull/4)
+- Fix typos in README (Adrien Berchet - [#4](https://github.com/BlueBrain/data-validation-framework/pull/4))
 
 ## [0.1.0](https://github.com/BlueBrain/data-validation-framework/compare/0.0.9..0.1.0)
 
 > 15 December 2021
 
-- Link fixed in README.md [#2](https://github.com/BlueBrain/data-validation-framework/pull/2)
-- Change license and open the sources [#1](https://github.com/BlueBrain/data-validation-framework/pull/1)
+- Link fixed in README.md (alex4200 - [#2](https://github.com/BlueBrain/data-validation-framework/pull/2))
+- Change license and open the sources (Adrien Berchet - [#1](https://github.com/BlueBrain/data-validation-framework/pull/1))
 - Add contribution doc (Adrien Berchet - [ebfe669](https://github.com/BlueBrain/data-validation-framework/commit/ebfe6698ae270e0873ddde8d1e0157a02cc50f2e))
 - Drop support of Python 3.6 and 3.7 (Adrien Berchet - [5bef8b0](https://github.com/BlueBrain/data-validation-framework/commit/5bef8b00cacb4e1c4210e8444fde3ef5ea95b7be))
 - Fix auto-changelog (Adrien Berchet - [5529558](https://github.com/BlueBrain/data-validation-framework/commit/55295589e374b9ef76730905704593c4ffefe68b))
