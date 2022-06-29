@@ -14,7 +14,7 @@
   {{/if}}
 
   {{#each merges}}
-    - {{#if commit.breaking}}**Breaking change:** {{/if}}{{message}}{{#if href}} [#{{id}}]({{href}}){{/if}}
+    - {{#if commit.breaking}}**Breaking change:** {{/if}}{{message}} ({{author}}{{#if href}} - [#{{id}}]({{href}}){{/if}})
   {{/each}}
   {{#each fixes}}
     - {{#if commit.breaking}}**Breaking change:** {{/if}}{{commit.subject}}{{#each fixes}} ({{author}}{{#if href}} - [#{{id}}]({{href}}){{/if}}){{/each}}
