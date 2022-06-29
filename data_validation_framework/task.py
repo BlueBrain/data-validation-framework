@@ -11,13 +11,12 @@ import luigi
 import pandas as pd
 from luigi.parameter import ChoiceParameter
 from luigi.parameter import DictParameter
+from luigi.parameter import OptionalIntParameter
+from luigi.parameter import OptionalPathParameter
+from luigi.parameter import OptionalStrParameter
 from luigi.task import flatten as task_flatten
 from luigi_tools.parameter import BoolParameter
 from luigi_tools.parameter import OptionalBoolParameter
-from luigi_tools.parameter import OptionalIntParameter
-from luigi_tools.parameter import OptionalPathParameter
-from luigi_tools.parameter import OptionalStrParameter
-from luigi_tools.task import CheckUnconsumedParamsMixin
 from luigi_tools.task import LogTargetMixin
 from luigi_tools.task import RerunMixin
 from numpy import VisibleDeprecationWarning
@@ -122,7 +121,6 @@ class InputParameters:
 
 
 class BaseValidationTask(
-    CheckUnconsumedParamsMixin,
     LogTargetMixin,
     RerunMixin,
     TagResultOutputMixin,
