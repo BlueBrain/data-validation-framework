@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.2](https://github.com/BlueBrain/data-validation-framework/compare/0.6.1..0.6.2)
+
+> 3 August 2022
+
+### Fixes
+
+- Revert index type to str and handle empty DFs (Adrien Berchet - [#32](https://github.com/BlueBrain/data-validation-framework/pull/32))
+
+### CI Improvements
+
+- Check PR titles using commitlint (Adrien Berchet - [#31](https://github.com/BlueBrain/data-validation-framework/pull/31))
+
 ## [0.6.1](https://github.com/BlueBrain/data-validation-framework/compare/0.6.0..0.6.1)
 
 > 3 August 2022
