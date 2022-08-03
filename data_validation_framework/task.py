@@ -482,7 +482,9 @@ class BaseValidationTask(
             L.debug("Importing the following reports: %s", all_report_paths)
             all_dfs = {
                 task_obj: self._rename_cols(
-                    pd.read_csv(path, index_col=INDEX_LABEL).rename_axis(index="index")
+                    pd.read_csv(path, index_col=INDEX_LABEL, dtype={INDEX_LABEL: str}).rename_axis(
+                        index="index"
+                    )
                 )
                 for task_obj, path in all_report_paths.items()
             }

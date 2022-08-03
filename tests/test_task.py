@@ -1743,6 +1743,27 @@ class TestElementValidationTask:
             == redirect_stdout
         )
 
+    @pytest.fixture
+    def empty_dataset_df_path(self, tmpdir):
+        """Create an empty CSV dataset and return its path."""
+        dataset_df_path = tmpdir / "dataset.csv"
+        base_dataset_df = pd.DataFrame({"a": [], "b": []})
+        base_dataset_df.to_csv(dataset_df_path)
+
+        return str(dataset_df_path)
+
+    def test_defaults_with_empty(self, TestTask, empty_dataset_df_path, tmpdir):
+        """Test that the empty dataset is properly processed."""
+        assert luigi.build(
+            [TestTask(dataset_df=empty_dataset_df_path, result_path=str(tmpdir / "out"))],
+            local_scheduler=True,
+        )
+        result = pd.read_csv(tmpdir / "out" / "TestTask" / "report.csv")
+        assert result["is_valid"].tolist() == []
+        assert result["ret_code"].tolist() == []
+        assert result["comment"].tolist() == []
+        assert result["exception"].tolist() == []
+
 
 class TestValidationWorkflow:
     """Test the data_validation_framework.task.ValidationWorkflow class."""

@@ -92,6 +92,8 @@ def message_worker(progress_bar, message_queue):
 
 def apply_to_df(df, func, *args, nb_processes=None, redirect_stdout=None, **kwargs):
     """Apply a function to df rows using tqdm."""
+    if df.empty:
+        return df
     nb_jobs = len(df)
     if redirect_stdout is None:
         redirect_stdout = True
