@@ -1288,9 +1288,7 @@ class TestSetValidationTask:
         assert not luigi.build([failing_task], local_scheduler=True)
 
         assert failed_tasks == [str(failing_task)]
-        assert exceptions == [
-            str(IndexError("The following index values are duplicated: ['0', '1']"))
-        ]
+        assert exceptions == [str(IndexError("The following index values are duplicated: [0, 1]"))]
 
     def test_change_index(self, tmpdir, TestTask):
         """Test that the process fails if the index is changed by the validation function."""
@@ -1644,7 +1642,7 @@ class TestSetValidationTask:
         assert len(res) == 1
         assert res[0][2] == (
             "The following inconsistent indexes between the dataset and the inputs are "
-            "ignored: ['2']"
+            "ignored: [2]"
         )
 
     def test_external_function(self, dataset_df_path):

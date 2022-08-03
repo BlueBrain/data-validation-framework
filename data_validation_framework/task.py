@@ -295,24 +295,10 @@ class BaseValidationTask(
     def read_dataset(self):
         """Import the dataset to a :class:`pandas.DataFrame`.
 
-        Note that the index column is loaded as a string.
-
         This method can be overridden to load custom data (e.g. GeoDataFrame, etc.).
         The dataset should always be loaded from the path given by `self.dataset_df`.
         """
-        df = pd.read_csv(self.dataset_df, index_col=False, dtype=str)
-        if self.input_index_col is None:
-            input_index_col = 0
-        else:
-            input_index_col = self.input_index_col
-
-        if isinstance(input_index_col, int):
-            df.set_index(df.columns[input_index_col], inplace=True)
-        elif input_index_col is not None:
-            df.set_index(input_index_col, inplace=True)
-
-        df = df.infer_objects()
-        return df
+        return pd.read_csv(self.dataset_df, index_col=self.input_index_col)
 
     def pre_process(self, df, args, kwargs):
         """Method executed before applying the external function."""
@@ -465,7 +451,7 @@ class BaseValidationTask(
                     f"{sorted(new_df.index.to_series().loc[duplicated_index])}"
                 )
         else:
-            new_df = pd.DataFrame(index=pd.Index([], dtype=object))
+            new_df = pd.DataFrame()
 
         return new_df
 
@@ -492,9 +478,7 @@ class BaseValidationTask(
             L.debug("Importing the following reports: %s", all_report_paths)
             all_dfs = {
                 task_obj: self._rename_cols(
-                    pd.read_csv(path, index_col=INDEX_LABEL, dtype={INDEX_LABEL: str}).rename_axis(
-                        index="index"
-                    )
+                    pd.read_csv(path, index_col=INDEX_LABEL).rename_axis(index="index")
                 )
                 for task_obj, path in all_report_paths.items()
             }
