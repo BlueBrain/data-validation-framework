@@ -1274,7 +1274,9 @@ class TestSetValidationTask:
         assert not luigi.build([failing_task], local_scheduler=True)
 
         assert failed_tasks == [str(failing_task)]
-        assert exceptions == [str(IndexError("The following index values are duplicated: [0, 1]"))]
+        assert exceptions == [
+            str(IndexError("The following index values are duplicated: ['0', '1']"))
+        ]
 
     def test_change_index(self, tmpdir, TestTask):
         dataset_df_path = str(tmpdir / "dataset.csv")
