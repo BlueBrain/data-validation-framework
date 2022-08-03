@@ -1644,7 +1644,7 @@ class TestSetValidationTask:
         assert len(res) == 1
         assert res[0][2] == (
             "The following inconsistent indexes between the dataset and the inputs are "
-            "ignored: [2]"
+            "ignored: ['2']"
         )
 
     def test_external_function(self, dataset_df_path):

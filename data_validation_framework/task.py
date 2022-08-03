@@ -300,9 +300,19 @@ class BaseValidationTask(
         This method can be overridden to load custom data (e.g. GeoDataFrame, etc.).
         The dataset should always be loaded from the path given by `self.dataset_df`.
         """
-        return pd.read_csv(
-            self.dataset_df, index_col=self.input_index_col, dtype={self.input_index_col: str}
-        )
+        df = pd.read_csv(self.dataset_df, index_col=False, dtype=str)
+        if self.input_index_col is None:
+            input_index_col = 0
+        else:
+            input_index_col = self.input_index_col
+
+        if isinstance(input_index_col, int):
+            df.set_index(df.columns[input_index_col], inplace=True)
+        elif input_index_col is not None:
+            df.set_index(input_index_col, inplace=True)
+
+        df = df.infer_objects()
+        return df
 
     def pre_process(self, df, args, kwargs):
         """Method executed before applying the external function."""
@@ -455,7 +465,7 @@ class BaseValidationTask(
                     f"{sorted(new_df.index.to_series().loc[duplicated_index])}"
                 )
         else:
-            new_df = pd.DataFrame()
+            new_df = pd.DataFrame(index=pd.Index([], dtype=object))
 
         return new_df
 
