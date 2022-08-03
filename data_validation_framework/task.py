@@ -295,14 +295,10 @@ class BaseValidationTask(
     def read_dataset(self):
         """Import the dataset to a :class:`pandas.DataFrame`.
 
-        Note that the index column is loaded as a string.
-
         This method can be overridden to load custom data (e.g. GeoDataFrame, etc.).
         The dataset should always be loaded from the path given by `self.dataset_df`.
         """
-        return pd.read_csv(
-            self.dataset_df, index_col=self.input_index_col, dtype={self.input_index_col: str}
-        )
+        return pd.read_csv(self.dataset_df, index_col=self.input_index_col)
 
     def pre_process(self, df, args, kwargs):
         """Method executed before applying the external function."""

@@ -133,3 +133,13 @@ def test_apply_to_df(nb_processes, redirect_stdout):
         re.match(r"  File \"(\/.*?\.[\w:]+)\", line \d+, in _tested_func", exception_lines[3])
         is not None
     )
+
+    # Test with an empty DF
+    emty_res = util.apply_to_df(
+        df.loc[[]],
+        _tested_func,
+        "val1",
+        "val2",
+    )
+
+    pd.testing.assert_frame_equal(emty_res, df.loc[[]])
