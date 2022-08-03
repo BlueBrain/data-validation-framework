@@ -67,7 +67,7 @@ def external_validation_function(df, output_path, *args, **kwargs):
 
 
 class ValidationTask2(dvf.task.SetValidationTask):
-    """In some cases you might want to keep the docstring to describe what a developper
+    """In some cases you might want to keep the docstring to describe what a developer
     needs to know, not the end-user. In this case, you can use the ``__specifications__``
     attribute to store the specifications."""
 
