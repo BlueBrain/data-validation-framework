@@ -12,6 +12,7 @@ from data_validation_framework import util
 
 
 def test_report_missing_columns():
+    """Test that missing columns are properly retrieved."""
     df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
     res, report_str, missing_cols = util.report_missing_columns(df, ["a"])
     assert res
@@ -35,6 +36,7 @@ def test_report_missing_columns():
 
 
 def test_check_missing_columns():
+    """Test that missing columns are properly checked."""
     df = pd.DataFrame({"a": [1, 2], "b": [3, 4], ("c", "d"): [5, 6]})
 
     assert util.check_missing_columns(df, ["a"]) == []
@@ -70,6 +72,7 @@ def _tested_func(row, arg1, arg2):
 @pytest.mark.parametrize("nb_processes", [None, 1, 2, 100])
 @pytest.mark.parametrize("redirect_stdout", [True, False])
 def test_apply_to_df(nb_processes, redirect_stdout):
+    """Test the apply_to_df function."""
     df = result.ValidationResultSet(
         pd.DataFrame(
             {

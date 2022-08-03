@@ -34,6 +34,7 @@ REASON_NO_LATEXMK = "The command latexmk is not available."
 
 @pytest.fixture
 def dataset_df_path(tmpdir):
+    """Create a small CSV dataset and return its path."""
     dataset_df_path = tmpdir / "dataset.csv"
     base_dataset_df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
     base_dataset_df.to_csv(dataset_df_path)
@@ -755,6 +756,8 @@ class TestSetValidationTask:
 
     @pytest.fixture
     def TestTask(self, tmpdir):
+        """Create a test task class."""
+
         class TestTask(task.SetValidationTask):
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
@@ -770,7 +773,7 @@ class TestSetValidationTask:
         return TestTask
 
     def test_defaults(self, TestTask, dataset_df_path, tmpdir):
-        # Test defaults
+        """Test defaults."""
         assert luigi.build(
             [TestTask(dataset_df=dataset_df_path, result_path=str(tmpdir / "out_defaults"))],
             local_scheduler=True,
@@ -782,7 +785,7 @@ class TestSetValidationTask:
         assert result.equals(expected)
 
     def test_no_dataset_no_input(self, TestTask, tmpdir):
-        # Test with no dataset and no input (should fail)
+        """Test with no dataset and no input (should fail)."""
 
         class FailingTestTask(TestTask):
             pass
@@ -804,7 +807,7 @@ class TestSetValidationTask:
         ]
 
     def test_inputs_outputs(self, TestTask, dataset_df_path, tmpdir):
-        # Test inputs
+        """Test inputs."""
 
         class TestTaskWithOutputs(task.SetValidationTask):
 
@@ -879,7 +882,7 @@ class TestSetValidationTask:
         assert result[["a", "b", "a_input"]].equals(expected[["a", "b", "a_input"]])
 
     def test_missing_columns(self, TestTask, dataset_df_path, tmpdir):
-        # Test missing columns in requirements
+        """Test missing columns in requirements."""
 
         class TestTaskMissingColumns(task.SetValidationTask):
             def inputs(self):
@@ -932,7 +935,7 @@ class TestSetValidationTask:
         ]
 
     def test_wrong_inputs(self, TestTask, dataset_df_path, tmpdir):
-        # Test bad format in inputs
+        """Test bad format in inputs."""
 
         class TestTaskMissingColumns(task.SetValidationTask):
             def inputs(self):
@@ -960,6 +963,8 @@ class TestSetValidationTask:
             )
 
     def test_validation_function_as_method(self, dataset_df_path, tmpdir):
+        """Test validation function defined as a method (implicitly casted to staticmethod)."""
+
         class TestTask(task.SetValidationTask):
             # pylint: disable=no-self-argument
             def validation_function(df, output_path, *args, **kwargs):
@@ -978,8 +983,10 @@ class TestSetValidationTask:
         assert result.equals(expected)
 
     class TestPropagation:
+        """Test argument propagation."""
+
         @pytest.fixture
-        def BaseTestTask(self, TestTask):
+        def BaseTestTask(self, TestTask):  # noqa: D102
             class BaseTestTask(TestTask):
                 def kwargs(self):
                     return {
@@ -997,7 +1004,7 @@ class TestSetValidationTask:
             return BaseTestTask
 
         @pytest.fixture
-        def TestTaskPassDatasetAndResultPath(self, BaseTestTask):
+        def TestTaskPassDatasetAndResultPath(self, BaseTestTask):  # noqa: D102
             class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
                 def inputs(self):
                     return {BaseTestTask: {}}
@@ -1016,7 +1023,7 @@ class TestSetValidationTask:
             return TestTaskPassDatasetAndResultPath
 
         @pytest.fixture
-        def TestTaskPassDatasetAndResultPathWithKwargs(self, BaseTestTask):
+        def TestTaskPassDatasetAndResultPathWithKwargs(self, BaseTestTask):  # noqa: D102
             class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
                 def inputs(self):
                     return {BaseTestTask: ({"result_path": str(self.result_path / "sub_path")}, {})}
@@ -1035,7 +1042,7 @@ class TestSetValidationTask:
             return TestTaskPassDatasetAndResultPath
 
         @pytest.fixture
-        def TestTaskPassDatasetAndResultPathWithInputParameters(self, BaseTestTask):
+        def TestTaskPassDatasetAndResultPathWithInputParameters(self, BaseTestTask):  # noqa: D102
             class TestTaskPassDatasetAndResultPath(task.SetValidationTask):
                 def inputs(self):
                     return {
@@ -1093,7 +1100,7 @@ class TestSetValidationTask:
         def test_dataset_propagation(
             self, TestTaskPassDatasetAndResultPath, dataset_df_path, tmpdir
         ):
-            # Test that the dataset is properly passed to the requirements
+            """Test that the dataset is properly passed to the requirements."""
             assert luigi.build(
                 [
                     TestTaskPassDatasetAndResultPath(
@@ -1108,7 +1115,7 @@ class TestSetValidationTask:
         def test_dataset_propagation_with_config(
             self, TestTaskPassDatasetAndResultPath, dataset_df_path, tmpdir
         ):
-            # Test that the dataset is not propagated when a value is already given in the config
+            """Test that the dataset is not propagated when it is already given in the config."""
             with luigi_tools.util.set_luigi_config(
                 {
                     "BaseTestTask": {
@@ -1130,7 +1137,7 @@ class TestSetValidationTask:
         def test_dataset_propagation_with_kwargs(
             self, TestTaskPassDatasetAndResultPathWithKwargs, dataset_df_path, tmpdir
         ):
-            # Test that the dataset is properly passed to the requirements
+            """Test that the dataset is properly passed to the requirements."""
             assert luigi.build(
                 [
                     TestTaskPassDatasetAndResultPathWithKwargs(
@@ -1145,8 +1152,11 @@ class TestSetValidationTask:
         def test_dataset_propagation_with_config_and_kwargs(
             self, TestTaskPassDatasetAndResultPathWithKwargs, dataset_df_path, tmpdir
         ):
-            # Test that the dataset is propagated from the constructor even when a value is already
-            # given in the config
+            """Test that the dataset propagation.
+
+            The dataset should be propagated from the constructor even when a value is already
+            given in the config.
+            """
             with luigi_tools.util.set_luigi_config(
                 {
                     "BaseTestTask": {
@@ -1168,7 +1178,7 @@ class TestSetValidationTask:
         def test_dataset_propagation_with_input_parameters(
             self, TestTaskPassDatasetAndResultPathWithInputParameters, dataset_df_path, tmpdir
         ):
-            # Test that the dataset is properly passed to the requirements
+            """Test that the dataset is properly passed to the requirements."""
             assert luigi.build(
                 [
                     TestTaskPassDatasetAndResultPathWithInputParameters(
@@ -1183,8 +1193,11 @@ class TestSetValidationTask:
         def test_dataset_propagation_with_config_and_input_parameters(
             self, TestTaskPassDatasetAndResultPathWithInputParameters, dataset_df_path, tmpdir
         ):
-            # Test that the dataset is propagated from the constructor even when a value is already
-            # given in the config
+            """Test that the dataset propagation.
+
+            The dataset should be propagated from the constructor even when a value is already
+            given in the config.
+            """
             with luigi_tools.util.set_luigi_config(
                 {
                     "BaseTestTask": {
@@ -1204,7 +1217,7 @@ class TestSetValidationTask:
             self._check_results(tmpdir, "out_pass_dataset", "out_pass_dataset/sub_path")
 
     def test_failing_validation_function(self, TestTask, dataset_df_path, tmpdir):
-        # Test with a failing validation function
+        """Test with a failing validation function."""
 
         class FailingTestTask(TestTask):
             @staticmethod
@@ -1233,7 +1246,7 @@ class TestSetValidationTask:
         ).all()
 
     def test_task_name(self, dataset_df_path, tmpdir):
-        # Test with a custom task name
+        """Test with a custom task name."""
 
         class TestTask(task.SetValidationTask):
             task_name = "test_custom_task_name"
@@ -1254,6 +1267,7 @@ class TestSetValidationTask:
         assert (tmpdir / "test_custom_task_name" / "report.csv").exists()
 
     def test_duplicated_index(self, tmpdir, TestTask):
+        """Test with duplicated index values."""
         dataset_df_path = str(tmpdir / "dataset.csv")
         base_dataset_df = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 1, 0])
         base_dataset_df.to_csv(dataset_df_path, index=True, index_label="index_col")
@@ -1279,6 +1293,7 @@ class TestSetValidationTask:
         ]
 
     def test_change_index(self, tmpdir, TestTask):
+        """Test that the process fails if the index is changed by the validation function."""
         dataset_df_path = str(tmpdir / "dataset.csv")
         base_dataset_df = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 2, 3])
         base_dataset_df.to_csv(dataset_df_path, index=True, index_label="index_col")
@@ -1314,6 +1329,8 @@ class TestSetValidationTask:
         ]
 
     def test_missing_retcodes(self, tmpdir, dataset_df_path, TestTask):
+        """Test invalid retcodes."""
+
         class TestTaskMissingRetcodes(TestTask):
             mode = OptionalStrParameter(default=None)
 
@@ -1364,6 +1381,8 @@ class TestSetValidationTask:
         )
 
     def test_missing_comments(self, tmpdir, dataset_df_path, TestTask):
+        """Test missing comments."""
+
         class TestTaskMissingComments(TestTask):
             mode = OptionalStrParameter(default=None)
 
@@ -1407,6 +1426,7 @@ class TestSetValidationTask:
             assert luigi.build([failing_task_notvalid], local_scheduler=True)
 
     def test_rename_multiindex(self):
+        """Test multiindex renaming."""
         df_1_level = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 2, 3])
 
         task.BaseValidationTask._rename_cols(df_1_level)  # pylint: disable=protected-access
@@ -1423,6 +1443,7 @@ class TestSetValidationTask:
         assert df_2_levels.columns.tolist() == [("level_1", "a"), ("level_1", "b"), ("level_1", "")]
 
     def test_check_inputs(self, TestTask):
+        """Test that inputs are properly checked."""
         assert not task.BaseValidationTask.check_inputs({})
         assert not task.BaseValidationTask.check_inputs(None)
 
@@ -1457,6 +1478,8 @@ class TestSetValidationTask:
             )
 
     def test_extra_requires(self, tmpdir, dataset_df_path):
+        """Test extra_requires feature."""
+
         class TestTaskA(luigi.Task):
             def run(self):
                 assert self.output().path == str(tmpdir / "file.test")
@@ -1493,6 +1516,8 @@ class TestSetValidationTask:
         assert (res["extra_result"] == "result of TestTaskA").all()
 
     def test_static_args_kwargs(self, dataset_df_path):
+        """Test the args and kwargs feature."""
+
         class TestTask(task.ElementValidationTask):
 
             args = [1, "a"]
@@ -1570,6 +1595,8 @@ class TestSetValidationTask:
         ]
 
     def test_different_input_index(self, tmpdir, dataset_df_path, caplog):
+        """Test inconsistent indexes between the dataset and the input tasks."""
+
         class TestTask(task.ElementValidationTask):
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
@@ -1621,6 +1648,8 @@ class TestSetValidationTask:
         )
 
     def test_external_function(self, dataset_df_path):
+        """Test with an external function."""
+
         def external_function(df, output_path, *args, **kwargs):
             assert args == [1, "a"]
             assert kwargs == {"k1": 1, "k2": 2}
@@ -1641,7 +1670,7 @@ class TestElementValidationTask:
     """Test the data_validation_framework.task.ElementValidationTask class."""
 
     @pytest.fixture
-    def TestTask(self, tmpdir):
+    def TestTask(self, tmpdir):  # noqa: D102
         class TestTask(task.ElementValidationTask):
             @staticmethod
             # pylint: disable=arguments-differ
@@ -1656,6 +1685,7 @@ class TestElementValidationTask:
 
     @pytest.fixture
     def dataset_df_path(self, tmpdir):
+        """Create a small CSV dataset and return its path."""
         dataset_df_path = tmpdir / "dataset.csv"
         base_dataset_df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         base_dataset_df.to_csv(dataset_df_path)
@@ -1663,8 +1693,7 @@ class TestElementValidationTask:
         return str(dataset_df_path)
 
     def test_defaults(self, TestTask, dataset_df_path, tmpdir):
-        # Test that the dataset is properly passed to the requirements
-
+        """Test that the dataset is properly passed to the requirements."""
         assert luigi.build(
             [TestTask(dataset_df=dataset_df_path, result_path=str(tmpdir / "out"))],
             local_scheduler=True,
@@ -1678,7 +1707,7 @@ class TestElementValidationTask:
 
     @pytest.mark.parametrize("nb_processes", [None, 1, 5])
     def test_nb_processes(self, TestTask, dataset_df_path, tmpdir, nb_processes):
-        # Test that the number of processes is properly passed to the requirements
+        """Test that the number of processes is properly passed to the requirements."""
 
         class TestWorkflow(task.ValidationWorkflow):
             def inputs(self):
@@ -1697,7 +1726,7 @@ class TestElementValidationTask:
 
     @pytest.mark.parametrize("redirect_stdout", [True, False])
     def test_redirect_stdout(self, TestTask, dataset_df_path, tmpdir, redirect_stdout):
-        # Test that the number of processes is properly passed to the requirements
+        """Test that the number of processes is properly passed to the requirements."""
 
         class TestWorkflow(task.ValidationWorkflow):
             def inputs(self):
@@ -1720,10 +1749,12 @@ class TestValidationWorkflow:
 
     @pytest.fixture
     def comment(self):
+        """Return a comment."""
         return "This element is not valid"
 
     @pytest.fixture
     def exception(self):
+        """Return an exception message."""
         return (
             "Traceback (most recent call last):"
             '  File "test.py", line 1, in <module>'
@@ -1733,11 +1764,14 @@ class TestValidationWorkflow:
 
     @pytest.fixture
     def default_report_config_test_date(self):
+        """Set a default date in the report config."""
         report._DEFAULT_REPORT_CONFIG["today"] = "TEST DATE"  # pylint: disable=protected-access
         yield None
         report._DEFAULT_REPORT_CONFIG.pop("today")  # pylint: disable=protected-access
 
     def test_gather(self, tmpdir, dataset_df_path, comment, exception):
+        """Test that the results are properly gathered in a workflow."""
+
         class TestTask(task.SetValidationTask):
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
@@ -1806,6 +1840,8 @@ class TestValidationWorkflow:
         assert result.loc[1, "('TestTask', 'exception')"] == exception
 
     def test_no_report(self, tmpdir, dataset_df_path):
+        """Test no report generation feature."""
+
         class TestTask(task.SetValidationTask):
             @staticmethod
             def validation_function(*args, **kwargs):
@@ -1828,7 +1864,7 @@ class TestValidationWorkflow:
         """Test the report generation after workflow run."""
 
         @pytest.fixture
-        def TestTask(self, comment, exception):
+        def TestTask(self, comment, exception):  # noqa: D102
             class TestTask(task.SetValidationTask):
                 """A test validation task."""
 
@@ -1859,7 +1895,7 @@ class TestValidationWorkflow:
             return TestTask
 
         @pytest.fixture
-        def TestTask_Specifications(self):
+        def TestTask_Specifications(self):  # noqa: D102
             class TestTask_Specifications(task.SetValidationTask):
                 """A test validation task with a specific report doc."""
 
@@ -1872,7 +1908,7 @@ class TestValidationWorkflow:
             return TestTask_Specifications
 
         @pytest.fixture
-        def TestWorkflow(self, TestTask, TestTask_Specifications):
+        def TestWorkflow(self, TestTask, TestTask_Specifications):  # noqa: D102
             class TestWorkflow(task.ValidationWorkflow):
                 """The global validation workflow."""
 
@@ -1888,6 +1924,7 @@ class TestValidationWorkflow:
             return TestWorkflow
 
         def test_specifications(self, TestTask, TestTask_Specifications):
+            """Test spcifications different from the docstring of the task."""
             assert TestTask(dataset_df="", result_path="").__specifications__ == (
                 "A test validation task."
             )
@@ -1898,6 +1935,7 @@ class TestValidationWorkflow:
         def test_rst2pdf(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test PDF generation using rst2pdf."""
             root = tmpdir / "rst2pdf"
             assert luigi.build(
                 [TestWorkflow(dataset_df=dataset_df_path, result_path=str(root))],
@@ -1913,6 +1951,7 @@ class TestValidationWorkflow:
         def test_latexpdf(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test PDF generation using latexpdf."""
             root = tmpdir / "latexpdf"
             assert luigi.build(
                 [
@@ -1931,6 +1970,7 @@ class TestValidationWorkflow:
         def test_fail_element_no_exception(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test PDF generation with exception message and comment."""
             root = tmpdir / "rst2pdf_no_exception"
             assert luigi.build(
                 [
@@ -1950,6 +1990,8 @@ class TestValidationWorkflow:
         def test_exception_levels(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test workflow with several nested exception levels."""
+
             class TestTask_levels(task.SetValidationTask):
                 """A test validation task with a deep level."""
 
@@ -2012,6 +2054,7 @@ class TestValidationWorkflow:
         def test_report_relative_path(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test with a relative report path."""
             root = tmpdir / "relative_path"
             assert luigi.build(
                 [
@@ -2032,6 +2075,7 @@ class TestValidationWorkflow:
         def test_report_absolute_path(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test with an absolute report path."""
             root = tmpdir / "absolute_path"
             assert luigi.build(
                 [
@@ -2052,6 +2096,7 @@ class TestValidationWorkflow:
         def test_report_all_succeed(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test report generation when all tasks succeed."""
             root = tmpdir / "all_succeed"
             assert luigi.build(
                 [
@@ -2074,6 +2119,7 @@ class TestValidationWorkflow:
         def test_report_all_fail(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, default_report_config_test_date
         ):
+            """Test report generation when all tasks fail."""
             root = tmpdir / "all_fail"
             assert luigi.build(
                 [
@@ -2096,6 +2142,8 @@ class TestValidationWorkflow:
         def test_report_warnings(
             self, tmpdir, dataset_df_path, data_dir, default_report_config_test_date
         ):
+            """Test report generation with warnings."""
+
             class TestTask_Warning(task.ElementValidationTask):
                 """A test validation task which can return warnings."""
 
@@ -2142,7 +2190,7 @@ class TestValidationWorkflow:
         """Test the report generation before workflow run (generate only the specifications)."""
 
         @pytest.fixture
-        def TestTask(self):
+        def TestTask(self):  # noqa: D102
             class TestTask(task.SetValidationTask):
                 """A test validation task."""
 
@@ -2152,7 +2200,7 @@ class TestValidationWorkflow:
             return TestTask
 
         @pytest.fixture
-        def TestTask_Specifications(self):
+        def TestTask_Specifications(self):  # noqa: D102
             class TestTask_Specifications(task.SetValidationTask):
                 """A test validation task with a specific report doc."""
 
@@ -2164,7 +2212,7 @@ class TestValidationWorkflow:
             return TestTask_Specifications
 
         @pytest.fixture
-        def TestWorkflow(self, TestTask, TestTask_Specifications):
+        def TestWorkflow(self, TestTask, TestTask_Specifications):  # noqa: D102
             class TestWorkflow(task.ValidationWorkflow):
                 """The global validation workflow."""
 
@@ -2177,7 +2225,7 @@ class TestValidationWorkflow:
             return TestWorkflow
 
         @pytest.fixture
-        def TestNestedWorkflow(self, TestTask, TestWorkflow):
+        def TestNestedWorkflow(self, TestTask, TestWorkflow):  # noqa: D102
             class TestNestedWorkflow(task.ValidationWorkflow):
                 """The global validation workflow."""
 
@@ -2190,6 +2238,7 @@ class TestValidationWorkflow:
             return TestNestedWorkflow
 
         def test_rst2pdf(self, tmpdir, dataset_df_path, data_dir, TestWorkflow):
+            """Test PDF generation using rst2pdf."""
             root = tmpdir / "rst2pdf"
             assert luigi.build(
                 [
@@ -2210,6 +2259,7 @@ class TestValidationWorkflow:
             )
 
         def test_rst2pdf_report_path(self, tmpdir, dataset_df_path, data_dir, TestWorkflow):
+            """Test PDF generation using rst2pdf and specifying a report path."""
             root = tmpdir / "rst2pdf"
             assert luigi.build(
                 [
@@ -2232,6 +2282,7 @@ class TestValidationWorkflow:
 
         @pytest.mark.skipif(SKIP_IF_NO_LATEXMK, reason=REASON_NO_LATEXMK)
         def test_latexpdf(self, tmpdir, dataset_df_path, data_dir, TestWorkflow):
+            """Test PDF generation using latexpdf."""
             root = tmpdir / "latexpdf"
             assert luigi.build(
                 [
@@ -2254,6 +2305,7 @@ class TestValidationWorkflow:
 
         @pytest.fixture
         def report_config(self):
+            """Create a dummy report config."""
             return {
                 "project": "Test title",
                 "version": "999",
@@ -2264,6 +2316,7 @@ class TestValidationWorkflow:
         def test_rst2pdf_with_config(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, report_config
         ):
+            """Test PDF generation using rst2pdf with a specific config."""
             root = tmpdir / "rst2pdf"
             assert luigi.build(
                 [
@@ -2287,6 +2340,7 @@ class TestValidationWorkflow:
         def test_latexpdf_with_config(
             self, tmpdir, dataset_df_path, data_dir, TestWorkflow, report_config
         ):
+            """Test PDF generation using latexpdf with a specific config."""
             root = tmpdir / "latexpdf"
             assert luigi.build(
                 [
@@ -2310,6 +2364,7 @@ class TestValidationWorkflow:
         def test_nested_workflows(
             self, tmpdir, dataset_df_path, data_dir, TestNestedWorkflow, report_config
         ):
+            """Test PDF generation with nested workflows."""
             root = tmpdir / "rst2pdf_nested"
             assert luigi.build(
                 [
@@ -2335,6 +2390,7 @@ class TestSkippableMixin:
     """Test the data_validation_framework.task.SkippableMixin class."""
 
     def test_fail_parent_type(self):
+        """Test it can only be used with ElementValidationTask or SetValidationTask subclasses."""
         err_msg = (
             "The SkippableMixin can only be associated with children of ElementValidationTask"
             " or SetValidationTask"
@@ -2359,6 +2415,8 @@ class TestSkippableMixin:
             TestTask2()
 
     def test_skip_element_task(self, dataset_df_path, tmpdir):
+        """Test that the task is properly skipped."""
+
         class TestSkippableTask(task.SkippableMixin(), task.ElementValidationTask):
             @staticmethod
             # pylint: disable=arguments-differ
@@ -2419,6 +2477,8 @@ class TestSkippableMixin:
         assert report_data["exception"].isnull().all()
 
     def test_skip_set_task(self, dataset_df_path, tmpdir):
+        """Test that the task is properly skipped."""
+
         class TestSkippableTask(task.SkippableMixin(), task.SetValidationTask):
             @staticmethod
             def validation_function(df, output_path, *args, **kwargs):

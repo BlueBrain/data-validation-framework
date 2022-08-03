@@ -9,6 +9,7 @@ from data_validation_framework import target
 
 @pytest.fixture
 def reset_target_no_prefix():
+    """Reset the default prefix of the OutputLocalTarget class."""
     target.OutputLocalTarget.set_default_prefix(None)
     yield
     target.OutputLocalTarget.set_default_prefix(None)
@@ -29,6 +30,7 @@ def test_ReportTarget(reset_target_no_prefix):
 
 @pytest.fixture
 def reset_target_relative_prefix():
+    """Set the default prefix of the OutputLocalTarget class."""
     target.OutputLocalTarget.set_default_prefix("parent_default_prefix")
     yield
     target.OutputLocalTarget.set_default_prefix(None)

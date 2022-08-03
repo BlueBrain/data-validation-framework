@@ -9,6 +9,7 @@ from data_validation_framework import rst_tools
 
 
 def test_init():
+    """Test constructor."""
     rst = rst_tools.RstFile("test_file")
     assert rst.file_path == "test_file"
     assert rst.mode == "w"
@@ -23,11 +24,13 @@ def test_init():
 
 @pytest.fixture
 def empty_RstFile(tmpdir):
+    """Create and empty RstFile object."""
     filename = tmpdir / "test_file.rst"
     return rst_tools.RstFile(str(filename))
 
 
 def test_add(empty_RstFile):
+    """Test add method."""
     empty_RstFile.add("test")
     empty_RstFile.add("test", indent=2)
     empty_RstFile.add("long\nline\nwith\nnewlines", indent=2)
@@ -35,6 +38,7 @@ def test_add(empty_RstFile):
 
 
 def test_new_line(empty_RstFile):
+    """Test new_line method."""
     empty_RstFile.newline()
     empty_RstFile.newline(3)
     assert empty_RstFile.get_buffer() == ["\n"] * 4
@@ -47,6 +51,7 @@ def test_new_line(empty_RstFile):
 
 
 def test_clear(empty_RstFile):
+    """Test clear method."""
     empty_RstFile.add("test")
     assert empty_RstFile.get_buffer() == ["test"]
     empty_RstFile.clear()
@@ -54,6 +59,7 @@ def test_clear(empty_RstFile):
 
 
 def test_str_formatting():
+    """Test formatting methods."""
     assert rst_tools.RstFile.bold("test") == "**test**"
     assert rst_tools.RstFile.emph("test") == "*test*"
     assert rst_tools.RstFile.pre("test") == "``test``"
@@ -68,6 +74,7 @@ def test_str_formatting():
 
 
 def test_headings(empty_RstFile):
+    """Test heading methods."""
     empty_RstFile.title("The title")
     empty_RstFile.h1("The heading 1")
     empty_RstFile.h2("The heading 2")
@@ -114,6 +121,7 @@ def test_headings(empty_RstFile):
 
 
 def test_toc_tree(empty_RstFile):
+    """Test toc_tree method."""
     # Default
     empty_RstFile.toc_tree()
 
@@ -150,6 +158,7 @@ def test_toc_tree(empty_RstFile):
 
 
 def test_code_block(empty_RstFile):
+    """Test code_block methods."""
     # Default
     empty_RstFile.code_block()
     assert empty_RstFile.get_buffer() == ["\n", ".. code-block:: ", "\n"]
@@ -161,6 +170,7 @@ def test_code_block(empty_RstFile):
 
 
 def test_exception(empty_RstFile):
+    """Test exception methods."""
     exception_str = (
         "\t\u001b[0;35mException\u001b[0m "
         "\u001b[0;36m172.18.0.2\u001b[0m "
@@ -183,6 +193,7 @@ def test_exception(empty_RstFile):
 
 
 def test_list(empty_RstFile):
+    """Test list methods."""
     list_str = [
         "first",
         "second",
@@ -223,6 +234,7 @@ def test_list(empty_RstFile):
 
 
 def test_write(empty_RstFile):
+    """Test write methods."""
     empty_RstFile.title("The title")
     empty_RstFile.add("Some text")
     empty_RstFile.write()
