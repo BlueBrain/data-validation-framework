@@ -1,4 +1,4 @@
-"""Tests of the data-validation-framework package."""
+"""Tests suite for the data-validation-framework package."""
 import re
 from pathlib import Path
 

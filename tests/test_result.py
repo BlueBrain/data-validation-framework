@@ -1,5 +1,4 @@
 """Test the data_validation_framework.result module."""
-# pylint: disable=no-self-use
 import pandas as pd
 import pytest
 

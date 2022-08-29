@@ -1,56 +1,19 @@
 # SETUPTOOLS
 [build-system]
 requires = [
-    "setuptools",
-    "setuptools_scm[toml]",
+    "setuptools>=42",
     "wheel",
+    "setuptools_scm[toml]>=3.4",
 ]
 
 # BLACK
 [tool.black]
 line-length = 100
-target-version = ["py38"]
-
-# PYLINT
-[tool.pylint.MASTER]
-load-plugins = [
-	"pylint.extensions.no_self_use",
+target-version = [
+    "py38",
+    "py39",
 ]
-
-[tool.pylint.messages-control]
-disable = [
-	"invalid-name",
-	"arguments-differ",
-]
-
-[tool.pylint.format]
-# Maximum number of characters on a single line.
-max-line-length = 100
-
-[tool.pylint.design]
-# Maximum number of arguments for function / method
-max-args = 10
-# Argument names that match this expression will be ignored. Default to name
-# with leading underscore
-ignored-argument-names = "args|kwargs|_.*"
-# Maximum number of locals for function / method body
-max-locals = 25
-# Maximum number of return / yield for function / method body
-max-returns = 6
-# Maximum number of branch for function / method body
-max-branches = 20
-# Maximum number of statements in function / method body
-max-statements = 60
-# Maximum number of parents for a class (see R0901).
-max-parents = 10
-# Maximum number of attributes for a class (see R0902).
-max-attributes = 40
-# Minimum number of public methods for a class (see R0903).
-min-public-methods = 0
-# Maximum number of public methods for a class (see R0904).
-max-public-methods = 60
-# Ignore some classes
-ignored-classes = "TextFileReader"
+include = 'data_validation_framework\/.*\.py$|tests\/.*\.py$|docs\/source\/conf\.py$|setup\.py$'
 
 # PYDOCSTYLE
 [tool.pydocstyle]
@@ -58,12 +21,20 @@ ignored-classes = "TextFileReader"
 #   - D105: Missing docstring in magic method
 #   - D107: Missing docstring in __init__
 add-ignore = [
-	"D105",
-	"D107",
+    "D105",
+    "D107",
 ]
 convention = "google"
+match = "[data_validation_framework, tests, docs/source/conf.py, setup.py]"
 
+# ISORT
 [tool.isort]
-line_length = 100
 profile = "black"
+line_length = 100
 force_single_line = true
+
+# PYTEST
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

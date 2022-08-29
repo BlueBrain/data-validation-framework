@@ -1,7 +1,7 @@
 # Contributing
 
-We would love for you to contribute to the luigi-tools package and help make it even better
-than it is today! As a contributor, here are the guidelines we would like you to follow:
+We would love for you to contribute to this package and help make it even better than it is today!
+As a contributor, here are the guidelines we would like you to follow:
 * [Issues and Bugs](#issue)
 * [Feature Requests](#feature)
 * [Submission Guidelines](#submit)
@@ -42,14 +42,28 @@ preferably be in touch with you to gather information.
 When you wish to contribute to the code base, please consider the following guidelines:
 * Make a [fork](https://guides.github.com/activities/forking/) of this repository.
 * Make your changes in your fork, in a new git branch:
+
   ```shell
   git checkout -b my-fix-branch main
   ```
 
 * Create your patch, **including appropriate test cases** (please note that the coverage must
   always be equal to 100%).
-* Run the full test suite, and ensure that all tests pass.
+* Run the full test suite, and ensure that all tests pass (at least with one of the required
+  python interpreters):
+
+  ```shell
+  tox
+  ```
+
+  or
+
+  ```shell
+  tox -e py38 -e lint -e docs -e check-packaging
+  ```
+
 * Commit your changes using a descriptive commit message.
+
   ```shell
   git commit -a
   ```
@@ -57,8 +71,9 @@ When you wish to contribute to the code base, please consider the following guid
   Note: the optional commit `-a` command line option will automatically **add** and **rm** edited
   files.
 * Push your branch to GitHub:
+
   ```shell
-  git push origin my-fix-branch
+  git push --set-upstream origin my-fix-branch
   ```
 
 * In GitHub, send a Pull Request to the `main` branch of the upstream repository of the relevant
@@ -66,7 +81,8 @@ When you wish to contribute to the code base, please consider the following guid
 * If we suggest changes then:
   * Make the required updates.
   * Re-run the test suites to ensure tests are still passing.
-  * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
+  * Rebase your branch and force push to your GitHub repository (this will update your Pull
+    Request):
 
     ```shell
     git rebase main -i
@@ -80,21 +96,25 @@ That's it! Thank you for your contribution!
 After your pull request is merged, you can safely delete your branch and pull the changes from the
 main (upstream) repository:
 * Delete the remote branch on GitHub either through the GitHub web UI or your local shell as follows:
+
   ```shell
   git push origin --delete my-fix-branch
   ```
 
 * Check out the main branch:
+
   ```shell
   git checkout main
   ```
 
 * Delete the local branch:
+
   ```shell
   git branch -D my-fix-branch
   ```
 
 * Update your main with the latest upstream version:
+
   ```shell
   git pull --ff upstream main
   ```
@@ -105,44 +125,44 @@ Releasing a new version can only be done by the maintainers.
 
 The release process is the following:
 * Checkout the main branch and ensure your local version is up to date:
+
   ```shell
   git checkout main
   git pull
   ```
 
 * Create a new branch locally:
+
   ```shell
   git checkout -b release_X.Y.Z
   ```
 
-* Create a new temporary tag locally:
+* Update the CHANGELOG file using auto-changelog (see https://www.npmjs.com/package/auto-changelog):
+
   ```shell
-  git tag X.Y.Z
+  auto-changelog -v X.Y.Z
   ```
 
-* Update the CHANGELOG file using auto-changelog:
-  ```shell
-  auto-changelog
-  ```
+* Commit and push the new changelog:
 
-* Commit the new changelog and remove the tag:
   ```shell
   git commit -m "Release X.Y.Z"
-  git tag -d X.Y.Z
-  git push origin
+  git push --set-upstream origin release_X.Y.Z
   ```
 
 * Open a new pull request from this branch and merge it.
+* Create a new release on GitHub.
 * Checkout the main branch and update it:
+
   ```shell
   git checkout main
   git pull
   ```
 
-* Create the final tag and push it:
+* Remove your local branch:
+
   ```shell
-  git tag X.Y.Z
-  git push origin X.Y.Z
+  git branch -D release_X.Y.Z
   ```
 
 After these steps the CI should automatically build the wheel and push it to pypi.

@@ -270,7 +270,6 @@ class BaseValidationTask(
             - ``<kwarg_*>`` is the name of a keyword argument passed to the constructor of the
               required task.
         """
-        # pylint: disable=no-self-use
         return None
 
     def args(self):
@@ -279,7 +278,6 @@ class BaseValidationTask(
         This method can be overridden to pass these arguments to the :meth:`validation_function`
         and to the :meth:`pre_process` and :meth:`post_process` methods.
         """
-        # pylint: disable=no-self-use
         return []
 
     def kwargs(self):
@@ -289,7 +287,6 @@ class BaseValidationTask(
         :meth:`validation_function` and to the :meth:`pre_process` and
         :meth:`post_process` methods.
         """
-        # pylint: disable=no-self-use
         return {}
 
     def read_dataset(self):
@@ -356,7 +353,6 @@ class BaseValidationTask(
 
     def extra_requires(self):
         """Requirements that should not be considered as validation tasks."""
-        # pylint: disable=no-self-use
         return []
 
     def extra_input(self):

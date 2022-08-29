@@ -1,5 +1,6 @@
 [paths]
-source_dvf =
+source_paths =
 	data_validation_framework
 	*/site-packages/data_validation_framework
+	*/data_validation_framework/data_validation_framework
 	*/data-validation-framework/data_validation_framework
