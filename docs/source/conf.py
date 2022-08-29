@@ -9,14 +9,15 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-from pkg_resources import get_distribution
+
+from importlib import metadata
 
 # -- Project information -----------------------------------------------------
 
 project = "data-validation-framework"
 
 # The short X.Y version
-version = get_distribution(project).version
+version = metadata.version("data_validation_framework")
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -32,8 +33,11 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
     "m2r2",
 ]
+
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
