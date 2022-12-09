@@ -9,12 +9,11 @@ reqs = [
     "luigi-tools>=0.0.18",
     "pandas",
     "rst2pdf",
-    "sphinx>=3,<5",
+    "sphinx>=3,<6",
     "tqdm",
 ]
 doc_reqs = [
     "m2r2",
-    "mistune<2",
     "sphinx-bluebrain-theme",
 ]
 test_reqs = [
@@ -58,6 +57,8 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Software Development :: Libraries :: Application Frameworks",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
