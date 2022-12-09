@@ -1,23 +1,25 @@
 # Changes here will be overwritten by Copier
 
-_commit: 0.1.7
+_commit: 0.1.26
 _src_path: git@bbpgitlab.epfl.ch:neuromath/python-template.git
 author_email: ''
 author_name: Blue Brain Project, EPFL
 copyright_license: Apache License 2.0
 copyright_year: '2022'
-download_url: git@github.com:BlueBrain/data-validation-framework.git
+distribution_name: data-validation-framework
+download_url: https://github.com/BlueBrain/data-validation-framework
 init_git: false
 maintainer: Adrien Berchet (@adrien-berchet)
 package_name: data_validation_framework
 project_description: Simple framework to create data validation workflows.
 project_name: data-validation-framework
 project_url: https://data-validation-framework.readthedocs.io
-repository: BlueBrain/data-validation-framework
+repository_name: data-validation-framework
+repository_namespace: BlueBrain
 repository_provider: github
+ssh_url: git@github.com:BlueBrain/data-validation-framework.git
 support_py37: false
 team_name: ''
-today: 29 August 2022
 tracker_url: https://github.com/BlueBrain/data-validation-framework/issues
 version: 0.6.2
 

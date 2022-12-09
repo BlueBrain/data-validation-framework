@@ -1,7 +1,7 @@
 """Setup for the data-validation-framework package."""
 from pathlib import Path
 
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 reqs = [
@@ -14,6 +14,7 @@ reqs = [
 ]
 doc_reqs = [
     "m2r2",
+    "sphinx",
     "sphinx-bluebrain-theme",
 ]
 test_reqs = [
@@ -37,7 +38,7 @@ setup(
         "Source": "https://github.com/BlueBrain/data-validation-framework",
     },
     license="Apache License 2.0",
-    packages=find_packages(exclude=["tests"]),
+    packages=find_namespace_packages(include=["data_validation_framework*"]),
     python_requires=">=3.8",
     use_scm_version=True,
     setup_requires=[
@@ -48,6 +49,7 @@ setup(
         "docs": doc_reqs,
         "test": test_reqs,
     },
+    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -62,5 +64,4 @@ setup(
         "Topic :: Software Development :: Libraries :: Application Frameworks",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    include_package_data=True,
 )
