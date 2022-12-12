@@ -2,6 +2,7 @@
 # pylint: disable=missing-function-docstring
 import os
 import re
+import sys
 import time
 
 import pandas as pd
@@ -120,17 +121,21 @@ def test_apply_to_df(nb_processes, redirect_stdout):
         assert res.loc[0, "pid"] != res.loc[3, "pid"]
         assert len(res.loc[~res["pid"].isnull(), "pid"].unique()) == min(nb_processes, len(df) - 2)
 
+    line_shift = sys.version_info.minor >= 3 and sys.version_info.minor >= 11
     exception_lines = exception[2].split("\n")
     assert exception_lines[0] == "Traceback (most recent call last):"
     assert exception_lines[2] == "    res = func(row, *args, **kwargs)"
-    assert exception_lines[4] == "    raise ValueError(\"test 'b' value\")"
-    assert exception_lines[5] == "ValueError: test 'b' value"
+    assert exception_lines[4 + line_shift] == "    raise ValueError(\"test 'b' value\")"
+    assert exception_lines[5 + line_shift] == "ValueError: test 'b' value"
     assert (
         re.match(r"  File \"(\/.*?\.[\w:]+)\", line \d+, in try_operation", exception_lines[1])
         is not None
     )
     assert (
-        re.match(r"  File \"(\/.*?\.[\w:]+)\", line \d+, in _tested_func", exception_lines[3])
+        re.match(
+            r"  File \"(\/.*?\.[\w:]+)\", line \d+, in _tested_func",
+            exception_lines[3 + line_shift],
+        )
         is not None
     )
 
