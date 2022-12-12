@@ -17,7 +17,7 @@ from importlib import metadata
 project = "data-validation-framework"
 
 # The short X.Y version
-version = metadata.version("data_validation_framework")
+version = metadata.version("data-validation-framework")
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -61,7 +61,7 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": project,
+    "metadata_distribution": "data-validation-framework",
 }
 
 html_title = "Data Validation Framework"

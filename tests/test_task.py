@@ -7,6 +7,7 @@
 import json
 import logging
 import re
+import sys
 import time
 from pathlib import Path
 from shutil import which
@@ -1700,7 +1701,11 @@ class TestElementValidationTask:
         assert result["ret_code"].tolist() == [0, 1, 1]
         assert result["comment"].tolist() == [np.nan, "bad value", np.nan]
         assert result.loc[[0, 1], "exception"].isnull().all()
-        assert result.loc[2, "exception"].split("\n")[5] == "ValueError: Incorrect value 3"
+        line_shift = sys.version_info.minor >= 3 and sys.version_info.minor >= 11
+        assert (
+            result.loc[2, "exception"].split("\n")[5 + line_shift]
+            == "ValueError: Incorrect value 3"
+        )
 
     @pytest.mark.parametrize("nb_processes", [None, 1, 5])
     def test_nb_processes(self, TestTask, dataset_df_path, tmpdir, nb_processes):
