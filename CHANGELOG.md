@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.3](https://github.com/BlueBrain/data-validation-framework/compare/0.6.2..0.6.3)
+
+> 12 December 2022
+
+### Refactoring and Updates
+
+- Apply Copier template (Adrien Berchet - [#34](https://github.com/BlueBrain/data-validation-framework/pull/34))
+
+### Uncategorized Changes
+
+- Add support of Py3.10 and Py3.11 (Adrien Berchet - [#35](https://github.com/BlueBrain/data-validation-framework/pull/35))
+
 ## [0.6.2](https://github.com/BlueBrain/data-validation-framework/compare/0.6.1..0.6.2)
 
 > 3 August 2022
