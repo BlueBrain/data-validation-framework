@@ -7,6 +7,7 @@ from setuptools import setup
 reqs = [
     "luigi>=3.1",
     "luigi-tools>=0.0.18",
+    "numpy<1.24",
     "pandas",
     "rst2pdf",
     "sphinx>=3,<6",
