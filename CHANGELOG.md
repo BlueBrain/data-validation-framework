@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.4](https://github.com/BlueBrain/data-validation-framework/compare/0.6.3..0.6.4)
+
+> 20 December 2022
+
+### Chores And Housekeeping
+
+- Pin numpy because of an incompatibility with Pandas (Adrien Berchet - [#37](https://github.com/BlueBrain/data-validation-framework/pull/37))
+
 ## [0.6.3](https://github.com/BlueBrain/data-validation-framework/compare/0.6.2..0.6.3)
 
 > 12 December 2022
