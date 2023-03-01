@@ -1947,7 +1947,7 @@ class TestValidationWorkflow:
             return TestWorkflow
 
         def test_specifications(self, TestTask, TestTask_Specifications):
-            """Test spcifications different from the docstring of the task."""
+            """Test specifications different from the docstring of the task."""
             assert TestTask(dataset_df="", result_path="").__specifications__ == (
                 "A test validation task."
             )
