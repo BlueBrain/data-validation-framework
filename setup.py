@@ -7,11 +7,11 @@ from setuptools import setup
 reqs = [
     "luigi>=3.1",
     "luigi-tools>=0.0.18",
-    "numpy<1.24",
-    "pandas",
-    "rst2pdf",
-    "sphinx>=3,<6",
-    "tqdm",
+    "numpy>=1.21",
+    "pandas>=1.3",
+    "rst2pdf>=0.99",
+    "sphinx>=4,<6",
+    "tqdm>=4.40",
 ]
 doc_reqs = [
     "m2r2",
@@ -20,11 +20,10 @@ doc_reqs = [
 ]
 test_reqs = [
     "diff_pdf_visually>=1.6.2",
-    "pause",
-    "pytest",
-    "pytest-cov",
-    "pytest-html",
-    "rst2pdf>=0.99",
+    "pause>=0.2",
+    "pytest>=7",
+    "pytest-cov>=3",
+    "pytest-html>=3.1",
 ]
 
 setup(
@@ -41,10 +40,6 @@ setup(
     license="Apache License 2.0",
     packages=find_namespace_packages(include=["data_validation_framework*"]),
     python_requires=">=3.8",
-    use_scm_version=True,
-    setup_requires=[
-        "setuptools_scm",
-    ],
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
