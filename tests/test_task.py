@@ -1326,6 +1326,107 @@ class TestSetValidationTask:
             )
         ]
 
+    def test_pre_process_change_index(self, tmpdir, TestTask):
+        """Test that the process fails if the index is changed by the preprocess."""
+        dataset_df_path = str(tmpdir / "dataset.csv")
+        base_dataset_df = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[0, 1, 2, 3])
+        base_dataset_df.to_csv(dataset_df_path, index=True, index_label="index_col")
+
+        class TestTaskUpdateIndex(TestTask):
+            def pre_process(self, df, args, kwargs):
+                df.sort_index(ascending=False, inplace=True)
+
+            @staticmethod
+            def validation_function(df, output_path, *args, **kwargs):
+                pass
+
+        failed_tasks = []
+        exceptions = []
+
+        @TestTaskUpdateIndex.event_handler(luigi.Event.FAILURE)
+        def check_exception(failed_task, exception):  # pylint: disable=unused-variable
+            failed_tasks.append(str(failed_task))
+            exceptions.append(str(exception))
+
+        failing_task = TestTaskUpdateIndex(
+            dataset_df=dataset_df_path,
+            input_index_col="index_col",
+            result_path=str(tmpdir / "out_preprocess_update_index"),
+        )
+        assert not luigi.build([failing_task], local_scheduler=True)
+
+        assert failed_tasks == [str(failing_task)]
+        assert exceptions == [
+            str(
+                IndexError(
+                    "The index changed during the process. Please update your validation function "
+                    "or your pre/post process functions to avoid this behaviour."
+                )
+            )
+        ]
+
+    @pytest.mark.parametrize(
+        "task_type",
+        # [int],
+        [int, str, object, float],
+    )
+    @pytest.mark.parametrize(
+        "workflow_type",
+        [int, str, object, float],
+    )
+    def test_read_dataset_change_index(
+        self, tmpdir, TestTask, dataset_df_path, task_type, workflow_type
+    ):
+        """Test that the process succeeds if the index is only changed by the preprocess."""
+
+        class TestTaskUpdateIndex(TestTask):
+            """A simple Task."""
+
+            def transform_index(self, df):
+                df.index = df.index.astype(task_type)
+                return df
+
+        class TestWorkflow(task.ValidationWorkflow):
+            """A validation workflow."""
+
+            def transform_index(self, df):
+                df.index = df.index.astype(workflow_type)
+                return df
+
+            def inputs(self):
+                return {
+                    TestTaskUpdateIndex: {},
+                }
+
+            def validation_function(df, output_path, *args, **kwargs):
+                if task_type == float and workflow_type == str:
+                    assert len(df) == 0
+                else:
+                    assert len(df) == 2
+
+        failed_tasks = []
+        exceptions = []
+
+        @TestWorkflow.event_handler(luigi.Event.FAILURE)
+        def check_exception(failed_task, exception):  # pylint: disable=unused-variable
+            failed_tasks.append(str(failed_task))
+            exceptions.append(str(exception))
+
+        workflow_with_index_cast = TestWorkflow(
+            dataset_df=dataset_df_path,
+            result_path=str(tmpdir / "out_preprocess_update_index"),
+        )
+        assert luigi.build([workflow_with_index_cast], local_scheduler=True)
+
+        assert not failed_tasks
+        assert not exceptions
+        res = pd.read_csv(tmpdir / "out_preprocess_update_index" / "TestWorkflow" / "report.csv")
+        if task_type == float and workflow_type == str:
+            assert len(res) == 0
+        else:
+            assert len(res) == 2
+        assert res["is_valid"].all()
+
     def test_missing_retcodes(self, tmpdir, dataset_df_path, TestTask):
         """Test invalid retcodes."""
 
@@ -1512,6 +1613,7 @@ class TestSetValidationTask:
         res = pd.read_csv(tmpdir / "extra_requires" / "TestTaskB" / "report.csv")
         assert (res["extra_path"] == str(tmpdir / "file.test")).all()
         assert (res["extra_result"] == "result of TestTaskA").all()
+        assert Path(res.loc[0, "extra_path"]).exists()
 
     def test_static_args_kwargs(self, dataset_df_path):
         """Test the args and kwargs feature."""

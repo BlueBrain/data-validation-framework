@@ -297,6 +297,15 @@ class BaseValidationTask(
         """
         return pd.read_csv(self.dataset_df, index_col=self.input_index_col)
 
+    def transform_index(self, df):
+        """Method executed after loading the dataset to transform its index.
+
+        .. note::
+
+            This transformation is applied to both the dataset and the input reports.
+        """
+        return df
+
     def pre_process(self, df, args, kwargs):
         """Method executed before applying the external function."""
 
@@ -440,6 +449,7 @@ class BaseValidationTask(
         if self.dataset_df is not None:
             L.info("Input dataset: %s", Path(self.dataset_df).resolve())
             new_df = self.read_dataset()
+            new_df = self.transform_index(new_df)
             duplicated_index = new_df.index.duplicated()
             if duplicated_index.any():
                 raise IndexError(
@@ -473,8 +483,10 @@ class BaseValidationTask(
             }
             L.debug("Importing the following reports: %s", all_report_paths)
             all_dfs = {
-                task_obj: self._rename_cols(
-                    pd.read_csv(path, index_col=INDEX_LABEL).rename_axis(index="index")
+                task_obj: self.transform_index(
+                    self._rename_cols(
+                        pd.read_csv(path, index_col=INDEX_LABEL).rename_axis(index="index")
+                    )
                 )
                 for task_obj, path in all_report_paths.items()
             }
