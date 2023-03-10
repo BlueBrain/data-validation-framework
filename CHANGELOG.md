@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/BlueBrain/data-validation-framework/compare/0.6.4..0.7.0)
+
+> 10 March 2023
+
+### New Features
+
+- Add a transform_index() method to transform the dataset index (Adrien Berchet - [#41](https://github.com/BlueBrain/data-validation-framework/pull/41))
+
+### CI Improvements
+
+- Add job for min versions (Adrien Berchet - [#39](https://github.com/BlueBrain/data-validation-framework/pull/39))
+
 ## [0.6.4](https://github.com/BlueBrain/data-validation-framework/compare/0.6.3..0.6.4)
 
 > 20 December 2022
@@ -12,13 +24,13 @@
 
 > 12 December 2022
 
+### Build
+
+- Add support of Py3.10 and Py3.11 (Adrien Berchet - [#35](https://github.com/BlueBrain/data-validation-framework/pull/35))
+
 ### Refactoring and Updates
 
 - Apply Copier template (Adrien Berchet - [#34](https://github.com/BlueBrain/data-validation-framework/pull/34))
-
-### Uncategorized Changes
-
-- Add support of Py3.10 and Py3.11 (Adrien Berchet - [#35](https://github.com/BlueBrain/data-validation-framework/pull/35))
 
 ## [0.6.2](https://github.com/BlueBrain/data-validation-framework/compare/0.6.1..0.6.2)
 
@@ -48,7 +60,7 @@
 
 > 29 June 2022
 
-### Uncategorized Changes
+### General Changes
 
 - Use features from luigi &gt;= 3.1 instead of luigi-tools (Adrien Berchet - [#26](https://github.com/BlueBrain/data-validation-framework/pull/26))
 - Build and publish wheels (Adrien Berchet - [#24](https://github.com/BlueBrain/data-validation-framework/pull/24))
@@ -57,7 +69,7 @@
 
 > 3 June 2022
 
-### Uncategorized Changes
+### General Changes
 
 - Fix link to documentation (Adrien Berchet - [#22](https://github.com/BlueBrain/data-validation-framework/pull/22))
 
@@ -69,7 +81,7 @@
 
 - Bump black (Adrien Berchet - [#19](https://github.com/BlueBrain/data-validation-framework/pull/19))
 
-### Uncategorized Changes
+### General Changes
 
 - Use CheckUnconsumedParamsMixin in BaseValidationTask (Adrien Berchet - [#20](https://github.com/BlueBrain/data-validation-framework/pull/20))
 - Updating copyright year (bbpgithubaudit - [#18](https://github.com/BlueBrain/data-validation-framework/pull/18))
@@ -78,7 +90,7 @@
 
 > 18 March 2022
 
-### Uncategorized Changes
+### General Changes
 
 - Fix target prefix and do not set default prefix any more (Adrien Berchet - [#16](https://github.com/BlueBrain/data-validation-framework/pull/16))
 - Upload artifacts of test jobs for debugging purpose (Adrien Berchet - [#15](https://github.com/BlueBrain/data-validation-framework/pull/15))
@@ -90,7 +102,7 @@
 
 > 12 January 2022
 
-### Uncategorized Changes
+### General Changes
 
 - New mechanism for inputs (Adrien Berchet - [#10](https://github.com/BlueBrain/data-validation-framework/pull/10))
 
@@ -98,7 +110,7 @@
 
 > 20 December 2021
 
-### Uncategorized Changes
+### General Changes
 
 - Add a mixin to make the task skippable (Adrien Berchet - [#7](https://github.com/BlueBrain/data-validation-framework/pull/7))
 - Setup Codecov (Adrien Berchet - [#6](https://github.com/BlueBrain/data-validation-framework/pull/6))
