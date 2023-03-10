@@ -1367,7 +1367,6 @@ class TestSetValidationTask:
 
     @pytest.mark.parametrize(
         "task_type",
-        # [int],
         [int, str, object, float],
     )
     @pytest.mark.parametrize(
@@ -1398,6 +1397,7 @@ class TestSetValidationTask:
                     TestTaskUpdateIndex: {},
                 }
 
+            @staticmethod
             def validation_function(df, output_path, *args, **kwargs):
                 if task_type == float and workflow_type == str:
                     assert len(df) == 0
