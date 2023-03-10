@@ -9,22 +9,23 @@ reqs = [
     "luigi-tools>=0.0.18",
     "numpy<1.24",
     "pandas",
-    "rst2pdf",
+    "rst2pdf>=0.99",
     "sphinx>=3,<6",
     "tqdm",
 ]
+
 doc_reqs = [
     "m2r2",
     "sphinx",
     "sphinx-bluebrain-theme",
 ]
+
 test_reqs = [
     "diff_pdf_visually>=1.6.2",
     "pause",
-    "pytest",
-    "pytest-cov",
-    "pytest-html",
-    "rst2pdf>=0.99",
+    "pytest>=6",
+    "pytest-cov>=3",
+    "pytest-html>=2",
 ]
 
 setup(
