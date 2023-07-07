@@ -10,7 +10,7 @@ reqs = [
     "numpy>=1.21",
     "pandas>=1.3",
     "rst2pdf>=0.99",
-    "sphinx>=4,<6",
+    "sphinx>=4,<8",
     "tqdm>=4.40",
 ]
 doc_reqs = [
