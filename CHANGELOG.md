@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/BlueBrain/data-validation-framework/compare/0.7.0..0.7.1)
+
+> 7 July 2023
+
+### Build
+
+- Bump max Sphinx version (Adrien Berchet - [#43](https://github.com/BlueBrain/data-validation-framework/pull/43))
+
 ## [0.7.0](https://github.com/BlueBrain/data-validation-framework/compare/0.6.4..0.7.0)
 
 > 10 March 2023
