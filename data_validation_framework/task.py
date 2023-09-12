@@ -802,7 +802,6 @@ def SkippableMixin(default_value=False):
         skip = BoolParameter(default=default_value, description=":bool: Skip the task")
 
         def __init__(self, *args, **kwargs):
-
             super().__init__(*args, **kwargs)
 
             if isinstance(self, ElementValidationTask):

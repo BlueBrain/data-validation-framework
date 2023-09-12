@@ -50,7 +50,6 @@ class TestTagResultOutputMixin:
         """Test the simple case."""
 
         class TestTask(task.TagResultOutputMixin, luigi.Task):
-
             with_conflict = luigi.BoolParameter(default=False)
 
             def run(self):
@@ -95,7 +94,6 @@ class TestTagResultOutputMixin:
         executed = []
 
         class TestTaskLeft(luigi_tools.task.RerunMixin, task.TagResultOutputMixin, luigi.Task):
-
             with_conflict = luigi.BoolParameter(default=False)
             seed = luigi.IntParameter(default=0, significant=False)
             root = None
@@ -356,7 +354,6 @@ class TestTagResultOutputMixin:
         executed = []
 
         class TestTaskRight(task.TagResultOutputMixin, luigi_tools.task.RerunMixin, luigi.Task):
-
             with_conflict = luigi.BoolParameter(default=False)
             seed = luigi.IntParameter(default=0, significant=False)
             root = None
@@ -810,7 +807,6 @@ class TestSetValidationTask:
         """Test inputs."""
 
         class TestTaskWithOutputs(task.SetValidationTask):
-
             output_columns = {"a": None}
 
             @staticmethod
@@ -1066,7 +1062,6 @@ class TestSetValidationTask:
 
         @staticmethod
         def _check_results(tmpdir, workflow_result_subpath, base_result_subpath=None):
-
             if base_result_subpath is None:
                 base_result_subpath = workflow_result_subpath
 
@@ -1589,7 +1584,6 @@ class TestSetValidationTask:
                 return target.OutputLocalTarget(tmpdir / "file.test")
 
         class TestTaskB(task.SetValidationTask):
-
             output_columns = {"extra_path": None, "extra_result": None}
 
             def kwargs(self):
@@ -1619,7 +1613,6 @@ class TestSetValidationTask:
         """Test the args and kwargs feature."""
 
         class TestTask(task.ElementValidationTask):
-
             args = [1, "a"]
             kwargs = {"int_value": 1, "str_value": "a"}
 
@@ -1634,7 +1627,6 @@ class TestSetValidationTask:
         )
 
         class TestFailingArgsTask(task.ElementValidationTask):
-
             args = 1
 
             @staticmethod
@@ -1665,7 +1657,6 @@ class TestSetValidationTask:
         ]
 
         class TestFailingKwargsTask(task.ElementValidationTask):
-
             kwargs = 1
 
             @staticmethod
@@ -1755,7 +1746,6 @@ class TestSetValidationTask:
             assert kwargs == {"k1": 1, "k2": 2}
 
         class TestExternalFunctionTask(task.ElementValidationTask):
-
             args = [1, "a"]
             kwargs = {"k1": 1, "k2": 2}
             validation_function = external_function
