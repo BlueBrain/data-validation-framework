@@ -125,7 +125,6 @@ def apply_to_df(df, func, *args, nb_processes=None, redirect_stdout=None, **kwar
             _init_tqdm_global_queue,
             [tqdm_queue, message_queue, redirect_stdout],
         ) as pool:
-
             # Start the computation
             results_list = pool.imap(
                 _apply_to_df_internal,
