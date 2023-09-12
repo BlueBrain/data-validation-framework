@@ -22,7 +22,7 @@ jobs:
             min_versions: "min_versions"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
@@ -62,18 +62,17 @@ jobs:
       with:
         report_paths: 'reports/pytest-*.xml'
     - name: Upload to codecov
-      if: ${{matrix.python-version == '3.8'}}
       uses: codecov/codecov-action@v3
       with:
         fail_ci_if_error: false
-        files: ./reports/coverage-py38.xml
+        directory: ./reports
         flags: pytest
-        name: "data-validation-framework-py38"
+        name: "data-validation-framework-py${{ matrix.python-version }}-${{ matrix.min_versions }}"
     - name: Upload test artifacts
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: tests-${{ matrix.python-version }}
+        name: tests-${{ matrix.python-version }}-${{ matrix.min_versions }}
         retention-days: 4
         path: |
           .tox/py*/tmp
