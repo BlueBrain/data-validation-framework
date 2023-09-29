@@ -1,11 +1,11 @@
 # Changes here will be overwritten by Copier
 
-_commit: 0.1.51
+_commit: 0.1.52
 _src_path: git@bbpgitlab.epfl.ch:neuromath/python-template.git
 author_email: ''
 author_name: Blue Brain Project, EPFL
 copyright_license: Apache License 2.0
-copyright_year: '2022'
+copyright_year: '2023'
 distribution_name: data-validation-framework
 download_url: https://github.com/BlueBrain/data-validation-framework
 init_git: false
