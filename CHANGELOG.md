@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.3](https://github.com/BlueBrain/data-validation-framework/compare/0.7.2..0.7.3)
+
+> 22 December 2023
+
+### Fixes
+
+- Attach event hooks to proper classes (Adrien Berchet - [#56](https://github.com/BlueBrain/data-validation-framework/pull/56))
+
 ## [0.7.2](https://github.com/BlueBrain/data-validation-framework/compare/0.7.1..0.7.2)
 
 > 22 December 2023

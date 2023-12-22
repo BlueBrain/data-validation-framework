@@ -637,10 +637,10 @@ class BaseValidationTask(
 
 
 @BaseValidationTask.event_handler(luigi.Event.SUCCESS)
-def success_summary(self):
+def success_summary(task):
     """Hook to log a summary report of the task."""
     L.info("==========================================")
-    task_summary = f"SUMMARY {self.task_name}: {self.nb_valid} / {self.nb_total} passed"
+    task_summary = f"SUMMARY {task.task_name}: {task.nb_valid} / {task.nb_total} passed"
     L.info(task_summary)
     L.info("==========================================")
 
@@ -751,12 +751,12 @@ class ValidationWorkflow(SetValidationTask, luigi.WrapperTask):
 
 
 @ValidationWorkflow.event_handler(luigi.Event.SUCCESS)
-def spec_report(current_task):
+def spec_report(task):
     """Hook to create a specification report."""
-    L.debug("Generating report of %s", current_task)
-    if current_task.generate_report:
+    L.debug("Generating report of %s", task)
+    if task.generate_report:
         try:
-            make_report(current_task, config=current_task.report_config)
+            make_report(task, config=task.report_config)
         # pylint: disable=broad-except
         except Exception as e:  # pragma: no cover
             L.error(
