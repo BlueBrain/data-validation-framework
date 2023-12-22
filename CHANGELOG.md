@@ -1,8 +1,25 @@
 # Changelog
 
+## [0.7.2](https://github.com/BlueBrain/data-validation-framework/compare/0.7.1..0.7.2)
+
+> 22 December 2023
+
+### Fixes
+
+- Set ValidationWorkflow as a WrapperTask (Adrien Berchet - [#54](https://github.com/BlueBrain/data-validation-framework/pull/54))
+
+### Chores And Housekeeping
+
+- Update Copyright date (Adrien Berchet - [#48](https://github.com/BlueBrain/data-validation-framework/pull/48))
+
+### CI Improvements
+
+- Remove CodeQL (Adrien Berchet - [#53](https://github.com/BlueBrain/data-validation-framework/pull/53))
+- (deps) Bump mikepenz/action-junit-report from 3 to 4 (dependabot[bot] - [#45](https://github.com/BlueBrain/data-validation-framework/pull/45))
+
 ## [0.7.1](https://github.com/BlueBrain/data-validation-framework/compare/0.7.0..0.7.1)
 
-> 7 July 2023
+> 8 July 2023
 
 ### Build
 
