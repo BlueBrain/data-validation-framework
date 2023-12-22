@@ -707,7 +707,7 @@ class SetValidationTask(BaseValidationTask):
         return df
 
 
-class ValidationWorkflow(SetValidationTask):
+class ValidationWorkflow(SetValidationTask, luigi.WrapperTask):
     """Class to define and process a validation workflow."""
 
     report_path = OptionalStrParameter(

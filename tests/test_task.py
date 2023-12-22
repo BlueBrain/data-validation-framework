@@ -2520,7 +2520,10 @@ class TestSkippableMixin:
         ):
             TestTask1()
 
-        class TestTask2(task.SkippableMixin(), task.ValidationWorkflow):
+        class TestTask2(
+            task.SkippableMixin(),
+            task.ValidationWorkflow,
+        ):  # pylint: disable=too-many-ancestors
             pass
 
         with pytest.raises(
