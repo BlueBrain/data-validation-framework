@@ -216,16 +216,6 @@ class BaseValidationTask(
     def __init__(self, *args, **kwargs):
         warnings.filterwarnings("ignore", module="numpy", category=VisibleDeprecationWarning)
         warnings.filterwarnings("ignore", module="luigi.task", category=DeprecationWarning)
-        event_handler = super().event_handler
-
-        # pylint: disable=unused-variable
-        @event_handler(luigi.Event.SUCCESS)
-        def success_summary(self):
-            """Summary report of the task."""
-            L.info("==========================================")
-            task_summary = f"SUMMARY {self.task_name}: {self.nb_valid} / {self.nb_total} passed"
-            L.info(task_summary)
-            L.info("==========================================")
 
         super().__init__(*args, **kwargs)
 
@@ -646,6 +636,15 @@ class BaseValidationTask(
         return self.__doc__
 
 
+@BaseValidationTask.event_handler(luigi.Event.SUCCESS)
+def success_summary(self):
+    """Hook to log a summary report of the task."""
+    L.info("==========================================")
+    task_summary = f"SUMMARY {self.task_name}: {self.nb_valid} / {self.nb_total} passed"
+    L.info(task_summary)
+    L.info("==========================================")
+
+
 class ElementValidationTask(BaseValidationTask):
     """A class to validate each element of a data set without considering the other elements.
 
@@ -733,23 +732,6 @@ class ValidationWorkflow(SetValidationTask, luigi.WrapperTask):
     gather_inputs = True
 
     def __init__(self, *args, **kwargs):
-        event_handler = super().event_handler
-
-        # pylint: disable=unused-variable
-        @event_handler(luigi.Event.SUCCESS)
-        def spec_report(current_task):
-            """Hook to create a specification report."""
-            L.debug("Generating report of %s", current_task)
-            if current_task.generate_report:
-                try:
-                    make_report(current_task, config=self.report_config)
-                # pylint: disable=broad-except
-                except Exception as e:  # pragma: no cover
-                    L.error(
-                        "The report could not be generated because of the following exception: %s",
-                        e,
-                    )
-
         super().__init__(*args, **kwargs)
 
         if self.specifications_only:
@@ -766,6 +748,21 @@ class ValidationWorkflow(SetValidationTask, luigi.WrapperTask):
         This method should usually do nothing for :class:`ValidationWorkflow` as this class is only
         supposed to gather validation steps.
         """
+
+
+@ValidationWorkflow.event_handler(luigi.Event.SUCCESS)
+def spec_report(current_task):
+    """Hook to create a specification report."""
+    L.debug("Generating report of %s", current_task)
+    if current_task.generate_report:
+        try:
+            make_report(current_task, config=current_task.report_config)
+        # pylint: disable=broad-except
+        except Exception as e:  # pragma: no cover
+            L.error(
+                "The report could not be generated because of the following exception: %s",
+                e,
+            )
 
 
 def _skippable_element_validation_function(validation_function, skip, *args, **kwargs):
