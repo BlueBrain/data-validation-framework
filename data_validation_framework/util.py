@@ -107,7 +107,7 @@ def apply_to_df(df, func, *args, nb_processes=None, redirect_stdout=None, **kwar
         # Parallel computation
         is_parallel = True
         nb_chunks = min(nb_jobs, nb_processes)
-        chunks = enumerate(np.array_split(df, nb_chunks))
+        chunks = enumerate(df.loc[i] for i in np.array_split(df.index, nb_chunks))
         tqdm_queue = multiprocessing.Queue()
         message_queue = multiprocessing.Queue()
 
