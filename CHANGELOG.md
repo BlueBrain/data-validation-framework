@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.4](https://github.com/BlueBrain/data-validation-framework/compare/0.7.3..0.7.4)
+
+> 26 February 2024
+
+### Chores And Housekeeping
+
+- Remove warning when creating chunks (Adrien Berchet - [#60](https://github.com/BlueBrain/data-validation-framework/pull/60))
+
 ## [0.7.3](https://github.com/BlueBrain/data-validation-framework/compare/0.7.2..0.7.3)
 
 > 22 December 2023
