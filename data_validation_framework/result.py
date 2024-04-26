@@ -61,14 +61,9 @@ class ValidationResultSet(pd.DataFrame):
         "exception": None,
     }
 
-    def __init__(self, *args, output_columns=None, **kwargs):
+    def __init__(self, *args, output_columns=None, auto_format=False, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Skip weird states due to Pandas and tqdm interactions
-        data = kwargs.get("data", args[0] if len(args) > 0 else None)
-        if not isinstance(
-            data, (ValidationResultSet, pd.core.internals.managers.BlockManager)
-        ) and not set(self.index).intersection(set(ValidationResultSet.out_cols.keys())):
+        if auto_format:
             self.format_data(output_columns)
 
     @property

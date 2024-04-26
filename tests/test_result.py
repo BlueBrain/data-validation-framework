@@ -34,7 +34,7 @@ class TestValidationResultSet:
 
     def test_defaults(self):
         """Check defaults."""
-        df = result.ValidationResultSet(index=["a", "b"])
+        df = result.ValidationResultSet(index=["a", "b"], auto_format=True)
         assert df.to_dict() == {
             "is_valid": {"a": True, "b": True},
             "ret_code": {"a": 0, "b": 0},
@@ -44,7 +44,7 @@ class TestValidationResultSet:
 
     def test_defaults_with_extra_data(self):
         """Check defaults with extra data."""
-        df = result.ValidationResultSet({"a": [1, 2], "b": [3, 4]})
+        df = result.ValidationResultSet({"a": [1, 2], "b": [3, 4]}, auto_format=True)
         assert df.to_dict() == {
             "is_valid": {0: True, 1: True},
             "ret_code": {0: 0, 1: 0},
@@ -56,7 +56,7 @@ class TestValidationResultSet:
 
     def test_default_ret_code(self):
         """Check default return code."""
-        df = result.ValidationResultSet({"is_valid": [True, False, True, False]})
+        df = result.ValidationResultSet({"is_valid": [True, False, True, False]}, auto_format=True)
         assert df.to_dict() == {
             "is_valid": {0: True, 1: False, 2: True, 3: False},
             "ret_code": {0: 0, 1: 1, 2: 0, 3: 1},
@@ -67,7 +67,9 @@ class TestValidationResultSet:
     def test_output_columns(self):
         """Check output_columns argument."""
         df = result.ValidationResultSet(
-            index=["a", "b"], output_columns={"col1": "val1", "col2": "val2"}
+            index=["a", "b"],
+            output_columns={"col1": "val1", "col2": "val2"},
+            auto_format=True,
         )
         assert df.to_dict() == {
             "is_valid": {"a": True, "b": True},
@@ -84,6 +86,7 @@ class TestValidationResultSet:
             {"is_valid": [True, False], "col1": ["test1", "test2"]},
             index=["a", "b"],
             output_columns={"col1": "val1", "col2": "val2"},
+            auto_format=True,
         )
         assert df.to_dict() == {
             "is_valid": {"a": True, "b": False},
@@ -126,9 +129,11 @@ class TestValidationResultSet:
             {"is_valid": [True, False], "col1": ["test1", "test2"]},
             index=["a", "b"],
             output_columns={"col1": "val1", "col2": "val2"},
+            auto_format=True,
         )
         df_order = result.ValidationResultSet(
-            pd.DataFrame(df[["col2", "comment", "is_valid", "col1", "exception", "ret_code"]])
+            pd.DataFrame(df[["col2", "comment", "is_valid", "col1", "exception", "ret_code"]]),
+            auto_format=True,
         )
         assert df_order.columns.tolist() == [
             "is_valid",
@@ -153,7 +158,8 @@ class TestValidationResultSet:
                         "ret_code",
                     ]
                 ]
-            )
+            ),
+            auto_format=True,
         )
         assert df_order.columns.tolist() == [
             "is_valid",
@@ -171,6 +177,7 @@ class TestValidationResultSet:
             {"is_valid": [True, False], "col1": ["test1", "test2"]},
             index=["a", "b"],
             output_columns={"col1": "val1", "col2": "val2"},
+            auto_format=True,
         )
         new_df = result.ValidationResultSet(df)
         assert new_df.apply(lambda x: x.ret_code * 5, axis=1).to_dict() == {"a": 0, "b": 5}

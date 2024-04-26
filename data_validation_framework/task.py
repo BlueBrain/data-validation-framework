@@ -573,7 +573,7 @@ class BaseValidationTask(
             )
 
         # Format the DataFrame
-        df = ValidationResultSet(new_df, output_columns=self.output_columns)
+        df = ValidationResultSet(new_df, output_columns=self.output_columns, auto_format=True)
 
         # Copy current index
         index = df.index.copy()
@@ -703,7 +703,7 @@ class SetValidationTask(BaseValidationTask):
         df.loc[df["comment"].isnull(), "comment"] = ""
         df.loc[df["exception"].isnull(), "exception"] = ""
 
-        return df
+        return ValidationResultSet(df, auto_format=True)
 
 
 class ValidationWorkflow(SetValidationTask, luigi.WrapperTask):

@@ -1975,6 +1975,33 @@ class TestValidationWorkflow:
         assert (tmpdir / "TestWorkflow" / "report.csv").exists()
         assert not (tmpdir / "report.pdf").exists()
 
+    def test_recursive_error(self, tmpdir, dataset_df_path):
+        """Check using as a pandas.DataFrame."""
+
+        class TestTask(task.ElementValidationTask):
+            output_columns = {"transformed_morph_path": None}
+
+            @staticmethod
+            def validation_function(row, data_dir):
+                return result.ValidationResult(
+                    is_valid=True, transformed_morph_path="/tmp/test_path"
+                )
+
+        class TestWorkflow(task.ValidationWorkflow):
+            args = ["transformed_dataset.csv", 2]
+
+            @staticmethod
+            def validation_function(df, data_dir, df_path="reduced_df.csv", parents=None):
+                print(df)  # The recursive error was happening here
+
+            def inputs(self):
+                return {TestTask: {}}
+
+        assert luigi.build(
+            [TestWorkflow(dataset_df=dataset_df_path, result_path=str(tmpdir))],
+            local_scheduler=True,
+        )
+
     class TestReport:
         """Test the report generation after workflow run."""
 
