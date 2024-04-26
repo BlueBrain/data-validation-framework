@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/BlueBrain/data-validation-framework/compare/0.7.4..0.8.0)
+
+> 26 April 2024
+
+### Fixes
+
+- Add an auto_format parameter to the ValidationResultSet constructor (Adrien Berchet - [#62](https://github.com/BlueBrain/data-validation-framework/pull/62))
+
 ## [0.7.4](https://github.com/BlueBrain/data-validation-framework/compare/0.7.3..0.7.4)
 
 > 26 February 2024
