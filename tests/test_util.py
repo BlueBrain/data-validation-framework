@@ -84,6 +84,7 @@ def test_apply_to_df(nb_processes, redirect_stdout):
             }
         ),
         output_columns={"new_data": None, "pid": None},
+        auto_format=True,
     )
 
     res = util.apply_to_df(
