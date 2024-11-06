@@ -1,4 +1,5 @@
 """Specific tasks."""
+
 import logging
 import sys
 import time
@@ -19,7 +20,11 @@ from luigi_tools.parameter import BoolParameter
 from luigi_tools.parameter import OptionalBoolParameter
 from luigi_tools.task import LogTargetMixin
 from luigi_tools.task import RerunMixin
-from numpy import VisibleDeprecationWarning
+
+try:
+    from numpy import VisibleDeprecationWarning
+except ImportError:  # pragma: no cover
+    from numpy.exceptions import VisibleDeprecationWarning
 
 from data_validation_framework.report import make_report
 from data_validation_framework.result import ValidationResult
@@ -39,7 +44,7 @@ class ValidationError(Exception):
 
 
 class TagResultOutputMixin:
-    """Initialize target prefixes and optionally add a tag to the resut directory.
+    """Initialize target prefixes and optionally add a tag to the result directory.
 
     .. warning::
 
@@ -163,7 +168,7 @@ class BaseValidationTask(
     data_dir = OptionalStrParameter(
         default="data",
         description=(
-            ":str: name of folder to store addittional files created by a task (the provided "
+            ":str: name of folder to store additional files created by a task (the provided "
             "validation function must take this as argument)."
         ),
     )

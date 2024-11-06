@@ -1,4 +1,5 @@
 """Util functions."""
+
 import contextlib
 import logging
 import multiprocessing
@@ -128,7 +129,7 @@ def apply_to_df(df, func, *args, nb_processes=None, redirect_stdout=None, **kwar
             # Start the computation
             results_list = pool.imap(
                 _apply_to_df_internal,
-                zip(chunks, repeat([func] + list(args)), repeat(kwargs)),
+                zip(chunks, repeat([func] + list(args)), repeat(kwargs)),  # pylint: disable=E0606
             )
             pool.close()
 

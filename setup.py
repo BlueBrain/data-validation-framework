@@ -1,4 +1,5 @@
 """Setup for the data-validation-framework package."""
+
 from pathlib import Path
 
 from setuptools import find_namespace_packages
@@ -10,7 +11,7 @@ reqs = [
     "numpy>=1.21",
     "pandas>=1.3",
     "rst2pdf>=0.99",
-    "sphinx>=4,<8",
+    "sphinx>=7.4",
     "tqdm>=4.40",
 ]
 doc_reqs = [
@@ -23,8 +24,8 @@ test_reqs = [
     "diff_pdf_visually>=1.6.2",
     "pause>=0.2",
     "pytest>=7",
-    "pytest-cov>=3",
-    "pytest-html>=3.1",
+    "pytest-cov>=4.1",
+    "pytest-html>=3.2",
 ]
 
 setup(
@@ -40,7 +41,11 @@ setup(
     },
     license="Apache License 2.0",
     packages=find_namespace_packages(include=["data_validation_framework*"]),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
+    use_scm_version=True,
+    setup_requires=[
+        "setuptools_scm",
+    ],
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
@@ -54,10 +59,10 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Libraries :: Application Frameworks",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],

@@ -1,4 +1,5 @@
 """Configuration for the pytest test suite."""
+
 # pylint: disable=missing-function-docstring
 import os
 from pathlib import Path

@@ -1,4 +1,5 @@
 """Specific targets."""
+
 import warnings
 
 from luigi_tools.target import OutputLocalTarget
