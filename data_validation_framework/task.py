@@ -23,7 +23,7 @@ from luigi_tools.task import RerunMixin
 
 try:
     from numpy import VisibleDeprecationWarning
-except ImportError:
+except ImportError:  # pragma: no cover
     from numpy.exceptions import VisibleDeprecationWarning
 
 from data_validation_framework.report import make_report
