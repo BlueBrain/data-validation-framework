@@ -14,10 +14,11 @@ from importlib import metadata
 
 # -- Project information -----------------------------------------------------
 
-project = "data-validation-framework"
+project_name = "Data Validation Framework"
+package_name = "data-validation-framework"
 
 # The short X.Y version
-version = metadata.version("data-validation-framework")
+version = metadata.version(package_name)
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -61,10 +62,10 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "data-validation-framework",
+    "metadata_distribution": package_name,
 }
 
-html_title = "Data Validation Framework"
+html_title = project_name
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False

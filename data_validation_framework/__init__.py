@@ -2,6 +2,7 @@
 
 Simple framework to create data validation workflows.
 """
+
 import importlib.metadata
 
 from data_validation_framework import result  # noqa
