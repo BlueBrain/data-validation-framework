@@ -1,4 +1,5 @@
 """Test the data_validation_framework.task module."""
+
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=redefined-outer-name

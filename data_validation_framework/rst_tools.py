@@ -1,4 +1,5 @@
 """Some tools to generate RST files."""
+
 import re
 import textwrap
 

@@ -1,4 +1,5 @@
 """Test the data_validation_framework.result module."""
+
 import pandas as pd
 import pytest
 

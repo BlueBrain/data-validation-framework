@@ -1,4 +1,5 @@
 """Test the data_validation_framework.target module."""
+
 # pylint: disable=missing-function-docstring
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument

@@ -1,2 +1,2 @@
 [codespell]
-skip = .git/*
+skip = .git/*,*.pdf
