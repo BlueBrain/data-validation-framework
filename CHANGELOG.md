@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0](https://github.com/BlueBrain/data-validation-framework/compare/0.8.0..0.9.0)
+
+> 6 November 2024
+
+### Build
+
+- Drop support for Python 3.8 (dependabot[bot] - [#64](https://github.com/BlueBrain/data-validation-framework/pull/64))
+
 ## [0.8.0](https://github.com/BlueBrain/data-validation-framework/compare/0.7.4..0.8.0)
 
 > 26 April 2024
