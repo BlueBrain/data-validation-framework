@@ -123,7 +123,6 @@ class TestValidationResultSet:
         new_df = result.ValidationResultSet(df)
         assert new_df.equals(df)
 
-    @pytest.mark.filterwarnings("ignore::numpy.VisibleDeprecationWarning")
     def test_column_order(self):
         """Check column order."""
         df = result.ValidationResultSet(
