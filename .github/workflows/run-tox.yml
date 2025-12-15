@@ -33,7 +33,7 @@ jobs:
         packages:
           poppler-utils
           imagemagick
-        version: 1.0
+        version: 1.1
     - name: Cache tox and precommit environments
       uses: actions/cache@v4
       with:
@@ -70,7 +70,7 @@ jobs:
         name: "data-validation-framework-py${{ matrix.python-version }}-${{ matrix.min_versions }}"
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Upload test artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: tests-${{ matrix.python-version }}-${{ matrix.min_versions }}
