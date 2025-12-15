@@ -33,7 +33,7 @@ jobs:
         packages:
           poppler-utils
           imagemagick
-        version: 1.0
+        version: 1.1
     - name: Cache tox and precommit environments
       uses: actions/cache@v4
       with:
