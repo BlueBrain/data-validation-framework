@@ -27,13 +27,10 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: mfinelli/setup-imagemagick@v7
-    - name: Cache APT Packages
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages:
-          poppler-utils
-        version: 1.1
+    - name: Install APT Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y poppler-utils imagemagick
     - name: Cache tox and precommit environments
       uses: actions/cache@v5
       with:
