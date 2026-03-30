@@ -73,6 +73,15 @@ def _apply_to_df_internal(data):
     return num, df.apply(_tqdm_wrapper, axis=1, args=args, **kwargs)
 
 
+def _restore_object_nulls(result_df, template_df):
+    """Restore None values for columns that were object-typed in the input."""
+    for col, dtype in template_df.dtypes.items():
+        if col in result_df.columns and pd.api.types.is_object_dtype(dtype):
+            result_df[col] = result_df[col].astype(object)
+            result_df.loc[result_df[col].isna(), col] = None
+    return result_df
+
+
 def tqdm_worker(progress_bar, tqdm_queue):
     """Update progress bar using the Queue."""
     while True:
@@ -155,7 +164,7 @@ def apply_to_df(df, func, *args, nb_processes=None, redirect_stdout=None, **kwar
     progress_bar.close()
 
     # Return the results
-    return all_res
+    return _restore_object_nulls(all_res, df)
 
 
 def try_operation(row, func, *args, **kwargs):
